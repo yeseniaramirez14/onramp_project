@@ -25,7 +25,7 @@ fav_artists = [
 ]
 
 
-#**** INGESTION && TRANSFORMATION ****#
+#**** INGESTION && TRANSFORMATION ****# 
 def get_artists():
     conn = sqlite3.connect("spotify.db")
     cursor = conn.cursor()
