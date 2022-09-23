@@ -2,13 +2,14 @@ from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
 import sqlite3
-import sys
 from pprint import pprint
 import pandas as pd 
 
-load_dotenv
+load_dotenv()
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
+conn = sqlite3.connect("spotify.db")
+cursor = conn.cursor()
 
 fav_artists = [
     "Drake",
@@ -27,9 +28,6 @@ fav_artists = [
 
 #**** INGESTION && TRANSFORMATION ****# 
 def get_artists():
-    conn = sqlite3.connect("spotify.db")
-    cursor = conn.cursor()
-
     artist_table = """
         CREATE TABLE IF NOT EXISTS artist(
             artist_id VARCHAR(50) PRIMARY KEY,
@@ -62,22 +60,18 @@ def get_artists():
         }
 
         artist_df = pd.DataFrame(artist_info, index=[0])
-        # print("artist_df:")
-        # pprint(artist_df)
 
         try:
             artist_df.to_sql("artist", conn, index=False, if_exists='append')
             print("Added data to the database")
         except:
-            print("Data already exists in the database")
+            print(f'Artist {artist_info["artist_name"]} already exists in the database')
 
-    conn.close()
+    conn.commit()
+    print("****** ARTIST IS DONE ******")
 
 
 def get_albums():
-    conn = sqlite3.connect("spotify.db")
-    cursor = conn.cursor()
-    
     album_table = """
         CREATE TABLE IF NOT EXISTS album(
             album_id VARCHAR(50) PRIMARY KEY,
@@ -99,10 +93,12 @@ def get_albums():
         FROM artist
     """
     cursor.execute(select_query)
-    artist_ids = cursor.fetchall()
+
+    # fetchall() returns a list of tuples so I am converting that into a single list using list comprehension 
+    artist_ids = [item[0] for item in cursor.fetchall()]
 
     for artist_id in artist_ids:
-        albums = sp.artist_albums(artist_id[0], album_type="album", country="US")
+        albums = sp.artist_albums(artist_id, album_type="album", country="US")
         for album in albums["items"]:
             album_info = {
                 "album_id": album["id"],
@@ -122,15 +118,14 @@ def get_albums():
                 album_df.to_sql("album", conn, index=False, if_exists='append')
                 print("Added data to the database")
             except:
-                print("Data already exists in the database")
+                print(f'Album {album_info["album_name"]} already exists in the database')
         
-    conn.close()
+    conn.commit()
+    print("****** ALBUM IS DONE ******")
+
 
 
 def get_tracks():
-    conn = sqlite3.connect("spotify.db")
-    cursor = conn.cursor()
-
     track_table = """
         CREATE TABLE IF NOT EXISTS track(
             track_id VARCHAR(50) PRIMARY KEY,
@@ -152,10 +147,10 @@ def get_tracks():
         FROM album
     """
     cursor.execute(select_query)
-    album_ids = cursor.fetchall()
+    album_ids = [item[0] for item in cursor.fetchall()]
 
     for album_id in album_ids:
-        tracks = sp.album_tracks(album_id[0])
+        tracks = sp.album_tracks(album_id)
         for track in tracks["items"]:
             track_info = {
                 "track_id": track["id"],
@@ -175,18 +170,83 @@ def get_tracks():
                 track_df.to_sql("track", conn, index=False, if_exists='append')
                 print("Added data to the database")
             except:
-                print("Data already exists in the database")
+                print(f'Track {track_info["song_name"]} already exists in the database')
 
-    conn.close()
+    conn.commit()
+
+    print("****** TRACK IS DONE ******")
+
+
 
 def get_features():
-    tracks = []
-    features = sp.audio_features(tracks)
+    feature_table = """
+        CREATE TABLE IF NOT EXISTS track_feature(
+            track_id VARCHAR(50) PRIMARY KEY,
+            danceability DOUBLE,
+            energy DOUBLE,
+            instrumentalness DOUBLE,
+            liveness DOUBLE,
+            loudness DOUBLE,
+            speechiness DOUBLE,
+            tempo DOUBLE,
+            type VARCHAR(50),
+            valence DOUBLE,
+            song_uri VARCHAR(100),
+            FOREIGN KEY(track_id) REFERENCES track(track_id)
+        )
+    """
+    cursor.execute(feature_table)
 
-# get_artists()
-# get_albums()
-# get_tracks()
+    select_query = """
+        SELECT track_id
+        FROM track
+    """
+    cursor.execute(select_query)
+    track_ids = [item[0] for item in cursor.fetchall()]
+    num_of_tracks = len(track_ids)
+    
+    starting_idx = 0
+    stopping_idx = 100
+
+    for i in range(num_of_tracks // 100):
+        features = sp.audio_features(track_ids[starting_idx:stopping_idx])
+        for feature in features:
+            feature_info = {
+                "track_id": feature["id"],
+                "danceability": feature["danceability"],
+                "energy": feature["energy"],
+                "instrumentalness": feature["instrumentalness"],
+                "liveness": feature["liveness"],
+                "loudness": feature["loudness"],
+                "speechiness": feature["speechiness"],
+                "tempo": feature["tempo"],
+                "type": feature["type"],
+                "valence": feature["valence"],
+                "song_uri": feature["uri"],
+            }
+
+            feature_df = pd.DataFrame(feature_info, index=[0])
+
+            try: 
+                feature_df.to_sql("track_feature", conn, index=False, if_exists='append')
+                print("Added data to the database")
+            except:
+                print(f'Features for track {feature_info["track_id"]} already exists in the database')
+        
+        starting_idx = stopping_idx
+        stopping_idx += 100
+
+    conn.commit()
+
+    print("****** FEATURES IS DONE ******")
+
+
+
+get_artists()
+get_albums()
+get_tracks()
 get_features()
 
+conn.close()
 
 
