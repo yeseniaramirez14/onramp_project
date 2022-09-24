@@ -1,62 +1,20 @@
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
-import sqlite3
-from sqlite3 import Error
-import pandas as pd 
-from pprint import pprint
+from tables import create_connection
 
 load_dotenv()
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
-def create_connection(db_file):
-    """ create a database connection to the SQLite database
-        specified by the db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
-    conn = None 
-    try:
-        conn = sqlite3.connect(db_file)
-    except Error as error:
-        print(error)
-    
-    return conn
-
-
-# def select_artists(conn):
-#     """
-#     Query all rows in the tasks table
-#     :param conn: the Connection object
-#     :return:
-#     """   
-#     cur = conn.cursor()
-#     test = """
-#         SELECT *
-#         FROM artist
-#     """
-#     cur.execute(test)
-
-#     rows = cur.fetchall()
-#     columns = cur.description
-
-#     result = []
-#     for value in rows:
-#         tmp = {}
-#         for (index,column) in enumerate(value):
-#             tmp[columns[index][0]] = column
-#         result.append(tmp)
-#     pprint(result)
-
 
 def top_songs_of_duration(conn):
     """
-    Query all rows in the tasks table
+    Query top songs by artist in terms of duration_ms
     :param conn: the Connection object
     :return:
     """   
     cur = conn.cursor()
-    cur.execute("DROP VIEW top_songs_of_duration;")
+    # cur.execute("DROP VIEW IF EXISTS top_songs_of_duration;")
     create_view = """
         CREATE VIEW IF NOT EXISTS top_songs_of_duration
         AS
@@ -89,6 +47,34 @@ def top_songs_of_duration(conn):
     #     print(row)
 
 
+def top_artists_by_followers(conn):
+    """
+    Query top artists by the number of followers
+    :param conn: the Connection object
+    :return:
+    """   
+    cur = conn.cursor()
+    # cur.execute("DROP VIEW IF EXISTS top_artists_by_followers;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS top_artists_by_followers
+        AS
+        SELECT
+			a.followers num_followers,
+			a.popularity popularity,
+			a.artist_name artist_name,
+			a.genre genre,
+			COUNT(*) num_albums,
+			STRFTIME('%m-%d-%Y', MAX(alb.release_date)) latest_album_release_date
+        FROM artist a
+        JOIN album alb
+            ON alb.artist_id = a.artist_id
+		GROUP BY 3
+        ORDER BY 1 DESC;     
+    """
+    cur.execute(create_view)
+    conn.commit()
+
+
 def main():
     database = "spotify.db"
 
@@ -98,8 +84,11 @@ def main():
         # print("1. Query task by priority:")
         # select_task_by_priority(conn, 1)
 
-        print("Query all top songs by artist in terms of duration_ms")
+        print("Query top songs by artist in terms of duration_ms")
         top_songs_of_duration(conn)
+
+        print("Query top artists by the number of followers")
+        top_artists_by_followers(conn)
 
 
 if __name__ == '__main__':

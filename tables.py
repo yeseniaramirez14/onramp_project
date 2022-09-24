@@ -3,16 +3,24 @@ from sqlite3 import Error
 
 
 # Create a connection and cursor object
-try:
-    conn = sqlite3.connect("spotify.db")
-    cursor = conn.cursor()
-    print("Database created and successfully connected to SQLite")
-except Error as error:
-    print("Error while connecting to SQLite:", error)
+def create_connection(db_file):
+    """ create a database connection to the SQLite database
+        specified by the db_file
+    :param db_file: database file
+    :return: Connection object or None
+    """
+    conn = None 
+    try:
+        conn = sqlite3.connect(db_file)
+    except Error as error:
+        print(error)
+    
+    return conn
 
 
 #**** CREATE ALL TABLES ****# 
-def create_artist_table():
+def create_artist_table(conn):
+    cur = conn.cursor()
     artist_table = """
         CREATE TABLE IF NOT EXISTS artist(
             artist_id VARCHAR(50) PRIMARY KEY,
@@ -26,12 +34,13 @@ def create_artist_table():
             artist_uri VARCHAR(100)
         );
     """
-    cursor.execute(artist_table)
+    cur.execute(artist_table)
     conn.commit()
     print("****** ARTIST TABLE CREATED ******")
 
 
-def create_album_table():
+def create_album_table(conn):
+    cur = conn.cursor()
     album_table = """
         CREATE TABLE IF NOT EXISTS album(
             album_id VARCHAR(50) PRIMARY KEY,
@@ -46,12 +55,13 @@ def create_album_table():
             FOREIGN KEY(artist_id) REFERENCES artist(artist_id)
         );
     """
-    cursor.execute(album_table)
+    cur.execute(album_table)
     conn.commit()
     print("****** ALBUM TABLE CREATED ******")
 
 
-def create_track_table():
+def create_track_table(conn):
+    cur = conn.cursor()
     track_table = """
         CREATE TABLE IF NOT EXISTS track(
             track_id VARCHAR(50) PRIMARY KEY,
@@ -66,12 +76,13 @@ def create_track_table():
             FOREIGN KEY(album_id) REFERENCES album(album_id)
         );
     """
-    cursor.execute(track_table)
+    cur.execute(track_table)
     conn.commit()
     print("****** TRACK TABLE CREATED ******")
 
 
-def create_features_table():
+def create_features_table(conn):
+    cur = conn.cursor()
     feature_table = """
         CREATE TABLE IF NOT EXISTS track_feature(
             track_id VARCHAR(50) PRIMARY KEY,
@@ -88,14 +99,21 @@ def create_features_table():
             FOREIGN KEY(track_id) REFERENCES track(track_id)
         );
     """
-    cursor.execute(feature_table)
+    cur.execute(feature_table)
     conn.commit()
     print("****** FEATURES TABLE CREATED ******")
 
 
-create_artist_table()
-create_album_table()
-create_track_table()
-create_features_table()
+def main():
+    database = "spotify.db"
 
-conn.close()
+    # create a database connection
+    conn = create_connection(database)
+    with conn:
+        create_artist_table(conn)
+        create_album_table(conn)
+        create_track_table(conn)
+        create_features_table(conn)
+
+if __name__ == '__main__':
+    main()

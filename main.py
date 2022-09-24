@@ -5,6 +5,7 @@ import sqlite3
 from sqlite3 import Error
 from pprint import pprint
 import pandas as pd 
+from tables import create_connection
 
 load_dotenv()
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
@@ -36,18 +37,8 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
     
     return True
 
-
-# Create a connection and cursor object
-try:
-    conn = sqlite3.connect("spotify.db")
-    cursor = conn.cursor()
-    print("Database created and successfully connected to SQLite")
-except Error as error:
-    print("Error while connecting to SQLite:", error)
-
-
 #**** INGESTION && TRANSFORMATION ****# 
-def insert_artists():
+def insert_artists(conn):
     for artist in fav_artists:
         search_artist = sp.search(artist, limit=1, type="artist")
         access_artist_info = search_artist["artists"]["items"][0]
@@ -76,15 +67,16 @@ def insert_artists():
     print("****** ARTIST DATA INSERTED INTO TABLE ******")
 
 
-def insert_albums():
+def insert_albums(conn):
     select_query = """
         SELECT artist_id 
         FROM artist
     """
-    cursor.execute(select_query)
+    cur = conn.cursor()
+    cur.execute(select_query)
 
     # fetchall() returns a list of tuples so I am converting that into a single list using list comprehension 
-    artist_ids = [item[0] for item in cursor.fetchall()]
+    artist_ids = [item[0] for item in cur.fetchall()]
 
     for artist_id in artist_ids:
         albums = sp.artist_albums(artist_id, album_type="album", country="US")
@@ -114,13 +106,14 @@ def insert_albums():
 
 
 
-def insert_tracks():
+def insert_tracks(conn):
     select_query = """
         SELECT album_id
         FROM album
     """
-    cursor.execute(select_query)
-    album_ids = [item[0] for item in cursor.fetchall()]
+    cur = conn.cursor()
+    cur.execute(select_query)
+    album_ids = [item[0] for item in cur.fetchall()]
 
     for album_id in album_ids:
         tracks = sp.album_tracks(album_id)
@@ -151,13 +144,14 @@ def insert_tracks():
 
 
 
-def insert_features():
+def insert_features(conn):
     select_query = """
         SELECT track_id
         FROM track
     """
-    cursor.execute(select_query)
-    track_ids = [item[0] for item in cursor.fetchall()]
+    cur = conn.cursor()
+    cur.execute(select_query)
+    track_ids = [item[0] for item in cur.fetchall()]
     num_of_tracks = len(track_ids)
     
     starting_idx = 0
@@ -194,12 +188,17 @@ def insert_features():
 
     print("****** FEATURE DATA INSERTED INTO TABLE ******")
 
+def main():
+    database = "spotify.db"
 
-insert_artists()
-insert_albums()
-insert_tracks()
-insert_features()
+    # create a database connection
+    conn = create_connection(database)
+    with conn:
+        insert_artists(conn)
+        insert_albums(conn)
+        insert_tracks(conn)
+        insert_features(conn)
 
-conn.close()
-
+if __name__ == '__main__':
+    main()
 
