@@ -1,15 +1,15 @@
+from tabnanny import check
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
 import sqlite3
+from sqlite3 import Error
 from pprint import pprint
 import pandas as pd 
 
 load_dotenv()
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
-conn = sqlite3.connect("spotify.db")
-cursor = conn.cursor()
 
 fav_artists = [
     "Drake",
@@ -26,23 +26,29 @@ fav_artists = [
 ]
 
 
-#**** INGESTION && TRANSFORMATION ****# 
-def get_artists():
-    artist_table = """
-        CREATE TABLE IF NOT EXISTS artist(
-            artist_id VARCHAR(50) PRIMARY KEY,
-            artist_name VARCHAR(255),
-            external_url VARCHAR(100),
-            genre VARCHAR(100),
-            image_url VARCHAR(100),
-            followers INT,
-            popularity INT,
-            type VARCHAR(50),
-            artist_uri VARCHAR(100)
-        )
-    """
-    cursor.execute(artist_table)
+def check_if_valid_data(df: pd.DataFrame) -> bool:
+    if df.empty:
+        print("No data available")
+        return False 
+    
+    if df.isnull().values.any():
+        num_nulls = df.isnull().sum().sum()
+        raise Exception(f'{num_nulls} null values found')
+    
+    return True
 
+
+# Create a connection and cursor object
+try:
+    conn = sqlite3.connect("spotify.db")
+    cursor = conn.cursor()
+    print("Database created and successfully connected to SQLite")
+except Error as error:
+    print("Error while connecting to SQLite:", error)
+
+
+#**** INGESTION && TRANSFORMATION ****# 
+def insert_artists():
     for artist in fav_artists:
         search_artist = sp.search(artist, limit=1, type="artist")
         access_artist_info = search_artist["artists"]["items"][0]
@@ -60,34 +66,18 @@ def get_artists():
         }
 
         artist_df = pd.DataFrame(artist_info, index=[0])
+        check_if_valid_data(artist_df)
 
         try:
             artist_df.to_sql("artist", conn, index=False, if_exists='append')
-            print("Added data to the database")
         except:
-            print(f'Artist {artist_info["artist_name"]} already exists in the database')
+            print(f'Artist, {artist_info["artist_name"]}, already exists in the database')
 
     conn.commit()
-    print("****** ARTIST IS DONE ******")
+    print("****** ARTIST DATA INSERTED INTO TABLE ******")
 
 
-def get_albums():
-    album_table = """
-        CREATE TABLE IF NOT EXISTS album(
-            album_id VARCHAR(50) PRIMARY KEY,
-            album_name VARCHAR(255),
-            external_url VARCHAR(100),
-            image_url VARCHAR(100),
-            release_date date,
-            total_tracks INT,
-            type VARCHAR(50),
-            album_uri VARCHAR(100),
-            artist_id VARCHAR(50),
-            FOREIGN KEY(artist_id) REFERENCES artist(artist_id)
-        )
-    """
-    cursor.execute(album_table)
-
+def insert_albums():
     select_query = """
         SELECT artist_id 
         FROM artist
@@ -113,35 +103,19 @@ def get_albums():
             }
 
             album_df = pd.DataFrame(album_info, index=[0])
+            check_if_valid_data(album_df)
 
             try:
                 album_df.to_sql("album", conn, index=False, if_exists='append')
-                print("Added data to the database")
             except:
-                print(f'Album {album_info["album_name"]} already exists in the database')
+                print(f'Album, {album_info["album_name"]}, already exists in the database')
         
     conn.commit()
-    print("****** ALBUM IS DONE ******")
+    print("****** ALBUM DATA INSERTED INTO TABLE ******")
 
 
 
-def get_tracks():
-    track_table = """
-        CREATE TABLE IF NOT EXISTS track(
-            track_id VARCHAR(50) PRIMARY KEY,
-            song_name VARCHAR(255),
-            external_url VARCHAR(100),
-            duration_ms INT,
-            explicit BOOLEAN,
-            disc_number INT,
-            type VARCHAR(50),
-            song_uri VARCHAR(100),
-            album_id VARCHAR(50),
-            FOREIGN KEY(album_id) REFERENCES album(album_id)
-        )
-    """
-    cursor.execute(track_table)
-
+def insert_tracks():
     select_query = """
         SELECT album_id
         FROM album
@@ -165,38 +139,20 @@ def get_tracks():
             }
 
             track_df = pd.DataFrame(track_info, index=[0])
+            check_if_valid_data(track_df)
 
             try: 
                 track_df.to_sql("track", conn, index=False, if_exists='append')
-                print("Added data to the database")
             except:
-                print(f'Track {track_info["song_name"]} already exists in the database')
+                print(f'Track, {track_info["song_name"]}, already exists in the database')
 
     conn.commit()
 
-    print("****** TRACK IS DONE ******")
+    print("****** TRACK DATA INSERTED INTO TABLE ******")
 
 
 
-def get_features():
-    feature_table = """
-        CREATE TABLE IF NOT EXISTS track_feature(
-            track_id VARCHAR(50) PRIMARY KEY,
-            danceability DOUBLE,
-            energy DOUBLE,
-            instrumentalness DOUBLE,
-            liveness DOUBLE,
-            loudness DOUBLE,
-            speechiness DOUBLE,
-            tempo DOUBLE,
-            type VARCHAR(50),
-            valence DOUBLE,
-            song_uri VARCHAR(100),
-            FOREIGN KEY(track_id) REFERENCES track(track_id)
-        )
-    """
-    cursor.execute(feature_table)
-
+def insert_features():
     select_query = """
         SELECT track_id
         FROM track
@@ -229,7 +185,6 @@ def get_features():
 
             try: 
                 feature_df.to_sql("track_feature", conn, index=False, if_exists='append')
-                print("Added data to the database")
             except:
                 print(f'Features for track {feature_info["track_id"]} already exists in the database')
         
@@ -238,14 +193,13 @@ def get_features():
 
     conn.commit()
 
-    print("****** FEATURES IS DONE ******")
+    print("****** FEATURE DATA INSERTED INTO TABLE ******")
 
 
-
-get_artists()
-get_albums()
-get_tracks()
-get_features()
+insert_artists()
+insert_albums()
+insert_tracks()
+insert_features()
 
 conn.close()
 
