@@ -23,7 +23,7 @@ def create_artist_table(conn):
     cur = conn.cursor()
     artist_table = """
         CREATE TABLE IF NOT EXISTS artist(
-            artist_id VARCHAR(50) PRIMARY KEY,
+            artist_id VARCHAR(50) PRIMARY KEY ON CONFLICT IGNORE,
             artist_name VARCHAR(255),
             external_url VARCHAR(100),
             genre VARCHAR(100),
@@ -43,7 +43,7 @@ def create_album_table(conn):
     cur = conn.cursor()
     album_table = """
         CREATE TABLE IF NOT EXISTS album(
-            album_id VARCHAR(50) PRIMARY KEY,
+            album_id VARCHAR(50) PRIMARY KEY ON CONFLICT IGNORE,
             album_name VARCHAR(255),
             external_url VARCHAR(100),
             image_url VARCHAR(100),
@@ -64,7 +64,7 @@ def create_track_table(conn):
     cur = conn.cursor()
     track_table = """
         CREATE TABLE IF NOT EXISTS track(
-            track_id VARCHAR(50) PRIMARY KEY,
+            track_id VARCHAR(50) PRIMARY KEY ON CONFLICT IGNORE,
             song_name VARCHAR(255),
             external_url VARCHAR(100),
             duration_ms INT,
@@ -85,7 +85,7 @@ def create_features_table(conn):
     cur = conn.cursor()
     feature_table = """
         CREATE TABLE IF NOT EXISTS track_feature(
-            track_id VARCHAR(50) PRIMARY KEY,
+            track_id VARCHAR(50) PRIMARY KEY ON CONFLICT IGNORE,
             danceability DOUBLE,
             energy DOUBLE,
             instrumentalness DOUBLE,

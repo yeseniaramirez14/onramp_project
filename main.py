@@ -5,7 +5,7 @@ import sqlite3
 from sqlite3 import Error
 from pprint import pprint
 import pandas as pd 
-from tables import create_connection
+from tables import create_connection, create_album_table, create_artist_table, create_features_table, create_track_table
 
 load_dotenv()
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
@@ -22,7 +22,13 @@ fav_artists = [
     "Queen",
     "Lynyrd Skynyrd",
     "Nirvana",
-    "Led Zeppelin"
+    "Led Zeppelin",
+    "Billie Eilish",
+    "J. Cole",
+    "The Beatles",
+    "Rihanna",
+    "Foo Fighters",
+    "Natti Natasha"
 ]
 
 
@@ -39,6 +45,7 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
 
 #**** INGESTION && TRANSFORMATION ****# 
 def insert_artists(conn):
+    create_artist_table(conn)
     for artist in fav_artists:
         search_artist = sp.search(artist, limit=1, type="artist")
         access_artist_info = search_artist["artists"]["items"][0]
@@ -68,6 +75,8 @@ def insert_artists(conn):
 
 
 def insert_albums(conn):
+    create_album_table(conn)
+    
     select_query = """
         SELECT artist_id 
         FROM artist
@@ -107,6 +116,7 @@ def insert_albums(conn):
 
 
 def insert_tracks(conn):
+    create_track_table(conn)
     select_query = """
         SELECT album_id
         FROM album
@@ -145,6 +155,8 @@ def insert_tracks(conn):
 
 
 def insert_features(conn):
+    create_features_table(conn)
+
     select_query = """
         SELECT track_id
         FROM track
@@ -175,6 +187,7 @@ def insert_features(conn):
             }
 
             feature_df = pd.DataFrame(feature_info, index=[0])
+            check_if_valid_data(feature_df)
 
             try: 
                 feature_df.to_sql("track_feature", conn, index=False, if_exists='append')
@@ -185,7 +198,6 @@ def insert_features(conn):
         stopping_idx += 100
 
     conn.commit()
-
     print("****** FEATURE DATA INSERTED INTO TABLE ******")
 
 def main():
