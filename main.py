@@ -1,4 +1,3 @@
-from tabnanny import check
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
@@ -135,7 +134,7 @@ def insert_tracks():
                 "disc_number": track["disc_number"],
                 "type": track["type"],
                 "song_uri": track["uri"],
-                "album_id": album_id[0],
+                "album_id": album_id,
             }
 
             track_df = pd.DataFrame(track_info, index=[0])
