@@ -56,36 +56,38 @@ def top_songs_of_duration(conn):
     :return:
     """   
     cur = conn.cursor()
+    cur.execute("DROP VIEW top_songs_of_duration;")
     create_view = """
         CREATE VIEW IF NOT EXISTS top_songs_of_duration
         AS
         SELECT
+			t.duration_ms duration_ms,
+			strftime('%H:%M:%S', t.duration_ms/1000, 'unixepoch') minutes,
             t.song_name song_name,
             a.artist_name artist_name,
-            t.duration_ms duration_ms
+			alb.album_name album_name,
+			a.genre genre
         FROM track t
-        JOIN album 
-            ON album.album_id = t.album_id
+        JOIN album alb
+            ON alb.album_id = t.album_id
         JOIN artist a
-            ON a.artist_id = album.artist_id 
-        ORDER BY 3 DESC;
+            ON a.artist_id = alb.artist_id 
+        ORDER BY 1 DESC;     
     """
     cur.execute(create_view)
+    conn.commit()
 
-    select_query = """
-        SELECT *
-        FROM top_songs_of_duration;
-    """
-    cur.execute(select_query)
+    # select_query = """
+    #     SELECT *
+    #     FROM top_songs_of_duration;
+    # """
+    # cur.execute(select_query)
 
-    rows = cur.fetchall()
+    # rows = cur.fetchall()
 
-    for row in rows:
-        print(row)
+    # for row in rows:
+    #     print(row)
 
-
-
-# top_songs_of_duration()
 
 def main():
     database = "spotify.db"
