@@ -1,10 +1,5 @@
-from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy
 from tables import create_connection
-
-load_dotenv()
-sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+from prettytable import from_db_cursor
 
 
 def top_songs_by_duration(conn):
@@ -19,33 +14,30 @@ def top_songs_by_duration(conn):
         CREATE VIEW IF NOT EXISTS top_songs_by_duration
         AS
         SELECT
-            t.song_name song_name,
-            a.artist_name artist_name,
             MAX(t.duration_ms) duration_ms,
             strftime('%H:%M:%S', t.duration_ms/1000, 'unixepoch') minutes,
-            alb.album_name album_name,
+            t.song_name song_name,
+            a.artist_name artist_name,
             a.genre genre
         FROM track t
         JOIN album alb
             ON alb.album_id = t.album_id
         JOIN artist a
             ON a.artist_id = alb.artist_id 
-        GROUP BY 2
-        ORDER BY 3 DESC;    
+        GROUP BY 4
+        ORDER BY 1 DESC, 2;    
     """
     cur.execute(create_view)
     conn.commit()
 
-    # select_query = """
-    #     SELECT *
-    #     FROM top_songs_by_duration;
-    # """
-    # cur.execute(select_query)
+    select_query = """
+        SELECT *
+        FROM top_songs_by_duration;
+    """
+    cur.execute(select_query)
 
-    # rows = cur.fetchall()
-
-    # for row in rows:
-    #     print(row)
+    view = from_db_cursor(cur)
+    print(view)
 
 
 def top_artists_by_followers(conn):
@@ -55,7 +47,7 @@ def top_artists_by_followers(conn):
     :return:
     """   
     cur = conn.cursor()
-    # cur.execute("DROP VIEW IF EXISTS top_artists_by_followers;")
+    cur.execute("DROP VIEW IF EXISTS top_artists_by_followers;")
     create_view = """
         CREATE VIEW IF NOT EXISTS top_artists_by_followers
         AS
@@ -75,6 +67,15 @@ def top_artists_by_followers(conn):
     cur.execute(create_view)
     conn.commit()
 
+    select_query = """
+        SELECT *
+        FROM top_artists_by_followers;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
 
 def top_songs_by_tempo(conn):
     """
@@ -83,16 +84,15 @@ def top_songs_by_tempo(conn):
     :return:
     """   
     cur = conn.cursor()
-    # cur.execute("DROP VIEW IF EXISTS top_songs_by_tempo;")
+    cur.execute("DROP VIEW IF EXISTS top_songs_by_tempo;")
     create_view = """
         CREATE VIEW IF NOT EXISTS top_songs_by_tempo
         AS
         SELECT
+            printf('%.3f', MAX(f.tempo)) tempo,
             t.song_name song_name,
             a.artist_name artist_name,
-            MAX(f.tempo) tempo,
-            alb.album_name album_name,
-            a.genre genre
+            alb.album_name album_name
         FROM track_feature f
         JOIN track t
             ON t.track_id = f.track_id
@@ -100,11 +100,20 @@ def top_songs_by_tempo(conn):
             ON alb.album_id = t.album_id
         JOIN artist a
             ON a.artist_id = alb.artist_id 
-        GROUP BY 2
-        ORDER BY 3 DESC;     
+        GROUP BY 3
+        ORDER BY 1 DESC;     
     """
     cur.execute(create_view)
     conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM top_songs_by_tempo;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
 
 
 def num_songs_albums_by_artist(conn):
@@ -121,42 +130,48 @@ def num_songs_albums_by_artist(conn):
         JOIN artist a
             ON a.artist_id = alb.artist_id 
         GROUP BY 1
-        ORDER BY 2 DESC, 3 DESC;
+        ORDER BY 2 DESC, 3 DESC, 1;
     """
     cur.execute(create_view)
     conn.commit()
-    
-# SELECT
-# 		a.artist_name artist_name,
-# 		COUNT(alb.album_name) total_albums,
-# 		SUM(alb.total_tracks) total_songs
-# FROM album alb
-# JOIN artist a
-# 		ON a.artist_id = alb.artist_id 
-# GROUP BY 1
-# ORDER BY 2 DESC, 3 DESC;
 
-        # SELECT 
-        #     artist_name, 
-        #     COUNT(album_name) num_albums,
-        #     SUM(num_tracks) total_num_tracks
-        # FROM 
-        #     (SELECT
-        #         a.artist_name artist_name,
-        #         alb.album_name album_name,
-        #         COUNT(t.song_name) num_tracks
-        #     FROM track_feature f
-        #     JOIN track t
-        #         ON t.track_id = f.track_id
-        #     JOIN album alb
-        #         ON alb.album_id = t.album_id
-        #     JOIN artist a
-        #         ON a.artist_id = alb.artist_id 
-        #     GROUP BY alb.album_id, a.artist_name
-        #     ORDER BY 1, 2, 3) AS album_table
-        # GROUP BY 1
-        # ORDER BY 2 DESC, 3 DESC;
+    select_query = """
+        SELECT *
+        FROM num_songs_albums_by_artist;
+    """
+    cur.execute(select_query)
 
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def albums_released_in_90s(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS albums_released_in_90s;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS albums_released_in_90s
+        AS
+        SELECT
+            strftime('%m-%d-%Y', alb.release_date) release_date,
+            alb.album_name album_name,
+            a.artist_name artist_name
+        FROM album alb
+        JOIN artist a
+            ON a.artist_id = alb.artist_id 
+        WHERE strftime('%Y', alb.release_date) BETWEEN '1990' AND '2000'
+        ORDER BY alb.release_date, 2, 3
+    """
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM albums_released_in_90s;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
 
 
 def main():
@@ -165,9 +180,6 @@ def main():
     # create a database connection
     conn = create_connection(database)
     with conn:
-        # print("1. Query task by priority:")
-        # select_task_by_priority(conn, 1)
-
         print("Query top songs by artist in terms of duration_ms")
         top_songs_by_duration(conn)
 
@@ -179,6 +191,11 @@ def main():
 
         print("Query artists with the most albums and songs")
         num_songs_albums_by_artist(conn)
+
+        print("Query albums released before 2000")
+        albums_released_in_90s(conn)
+
+        print("Query number a songs an artist has with a danceability over 0.8")
 
 
 if __name__ == '__main__':
