@@ -28,7 +28,10 @@ fav_artists = [
     "The Beatles",
     "Rihanna",
     "Foo Fighters",
-    "Natti Natasha"
+    "Natti Natasha",
+    "Black Sabbath",
+    "Van Halen",
+    "Pink Floyd"
 ]
 
 
@@ -89,7 +92,7 @@ def insert_albums(conn):
 
     in_db = False
     for artist_id in artist_ids:
-        albums = sp.artist_albums(artist_id, album_type="album", country="US")
+        albums = sp.artist_albums(artist_id, album_type="album", country="US", limit=50)
         for album in albums["items"]:
             album_info = {
                 "album_id": album["id"],
