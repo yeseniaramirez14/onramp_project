@@ -174,6 +174,104 @@ def albums_released_in_90s(conn):
     print(view)
 
 
+def top_20_songs_by_danceability(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS top_20_songs_by_danceability;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS top_20_songs_by_danceability
+        AS
+        SELECT
+		    printf('%.3f', f.danceability) danceability,
+            t.song_name song_name,
+            a.artist_name artist_name
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f
+            ON f.track_id = t.track_id
+		WHERE f.danceability >= 0.80
+        ORDER BY 1 DESC
+		LIMIT 20;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM top_20_songs_by_danceability;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def avg_energy_of_artist(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS avg_energy_of_artist;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS avg_energy_of_artist
+        AS
+        SELECT
+		    printf('%.3f', AVG(f.energy)) energy,
+            a.artist_name artist_name,
+			a.genre genre
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f
+            ON f.track_id = t.track_id
+		GROUP BY 2
+        ORDER BY 1 DESC;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM avg_energy_of_artist;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def artists_w_atleast_20_albums(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS artists_w_atleast_20_albums;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS artists_w_atleast_20_albums
+        AS
+        SELECT
+            a.artist_name artist_name,
+            COUNT(alb.album_name) total_albums
+		FROM album alb
+        JOIN artist a
+            ON a.artist_id = alb.artist_id 
+        GROUP BY 1
+		HAVING COUNT(alb.album_name) > 20
+        ORDER BY 2 DESC, 1;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM artists_w_atleast_20_albums;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
 def main():
     database = "spotify.db"
 
@@ -192,10 +290,17 @@ def main():
         print("Query artists with the most albums and songs")
         num_songs_albums_by_artist(conn)
 
-        print("Query albums released before 2000")
+        print("Query albums released in the 90s")
         albums_released_in_90s(conn)
 
-        print("Query number a songs an artist has with a danceability over 0.8")
+        print("Query top 20 songs with the highest danceability")
+        top_20_songs_by_danceability(conn)
+
+        print("Query avg energy of artist")
+        avg_energy_of_artist(conn)
+
+        print("Query of artists who have more than 20 albums")
+        artists_w_atleast_20_albums(conn)
 
 
 if __name__ == '__main__':
