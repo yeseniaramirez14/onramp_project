@@ -272,6 +272,7 @@ def artists_w_atleast_20_albums(conn):
     view = from_db_cursor(cur)
     print(view)
 
+
 def main():
     database = "spotify.db"
 
