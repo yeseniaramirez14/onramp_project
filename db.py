@@ -78,7 +78,7 @@ def insert_albums(conn):
     create_album_table(conn)
     
     select_query = """
-        SELECT artist_id 
+        SELECT artist_id
         FROM artist
     """
     cur = conn.cursor()
@@ -87,6 +87,7 @@ def insert_albums(conn):
     # fetchall() returns a list of tuples so I am converting that into a single list using list comprehension 
     artist_ids = [item[0] for item in cur.fetchall()]
 
+    in_db = False
     for artist_id in artist_ids:
         albums = sp.artist_albums(artist_id, album_type="album", country="US")
         for album in albums["items"]:
@@ -102,17 +103,37 @@ def insert_albums(conn):
                 "artist_id": album["artists"][0]["id"],
             }
 
-            album_df = pd.DataFrame(album_info, index=[0])
-            check_if_valid_data(album_df)
+            select_current_albums = """
+                SELECT album_name, artist_id
+                FROM album;
+            """
+            cur.execute(select_current_albums)
+            
+            current_albums = cur.fetchall()
 
-            try:
+            if len(current_albums) == 0:
+                album_df = pd.DataFrame(album_info, index=[0])
+                check_if_valid_data(album_df)
                 album_df.to_sql("album", conn, index=False, if_exists='append')
-            except:
-                print(f'Album, {album_info["album_name"]}, already exists in the database')
+
+            for current_album in current_albums:
+                if album["name"] in current_album and album["artists"][0]["id"] in current_album:
+                    print(f'One version of {album["name"]} is already in the database')
+                    in_db = True
+   
+            if in_db == False:
+                album_df = pd.DataFrame(album_info, index=[0])
+                check_if_valid_data(album_df)
+
+                try:
+                    album_df.to_sql("album", conn, index=False, if_exists='append')
+                except:
+                    print(f'Album, {album_info["album_name"]}, already exists in the database')
+
+            in_db = False
         
     conn.commit()
     print("****** ALBUM DATA INSERTED INTO TABLE ******")
-
 
 
 def insert_tracks(conn):
@@ -199,6 +220,8 @@ def insert_features(conn):
 
     conn.commit()
     print("****** FEATURE DATA INSERTED INTO TABLE ******")
+    
+        
 
 def main():
     database = "spotify.db"
