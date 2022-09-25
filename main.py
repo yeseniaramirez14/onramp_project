@@ -169,7 +169,7 @@ def insert_features(conn):
     starting_idx = 0
     stopping_idx = 100
 
-    for i in range(num_of_tracks // 100):
+    for i in range((num_of_tracks // 100) + 1):
         features = sp.audio_features(track_ids[starting_idx:stopping_idx])
         for feature in features:
             feature_info = {
