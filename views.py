@@ -159,7 +159,7 @@ def albums_released_in_90s(conn):
         JOIN artist a
             ON a.artist_id = alb.artist_id 
         WHERE strftime('%Y', alb.release_date) BETWEEN '1990' AND '2000'
-        ORDER BY alb.release_date, 2, 3
+        ORDER BY alb.release_date, 2, 3;
     """
     cur.execute(create_view)
     conn.commit()
@@ -273,6 +273,211 @@ def artists_w_atleast_20_albums(conn):
     print(view)
 
 
+def avg_audio_features_by_genre(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS avg_audio_features_by_genre;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS avg_audio_features_by_genre
+        AS
+        SELECT
+            a.genre,
+			AVG(a.popularity) popularity,
+            AVG(f.danceability) danceability,
+            AVG(f.energy) energy,
+            AVG(f.instrumentalness) instrumentalness, 
+            AVG(f.liveness) liveness,
+            AVG(f.loudness) loudness,
+            AVG(f.speechiness) speechiness,
+            AVG(f.tempo) tempo,
+            AVG(f.valence) valence 
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+        GROUP BY 1
+		ORDER BY 2 DESC;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM avg_audio_features_by_genre;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def avg_audio_features_by_artist(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS avg_audio_features_by_artist;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS avg_audio_features_by_artist
+        AS
+        SELECT
+            AVG(f.danceability) danceability,
+            AVG(f.energy) energy,
+            AVG(f.instrumentalness) instrumentalness, 
+            AVG(f.liveness) liveness,
+            AVG(f.speechiness) speechiness,
+            AVG(f.valence) valence 
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+        GROUP BY a.artist_id
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM avg_audio_features_by_artist;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def audio_features_for_album(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS audio_features_for_album;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS audio_features_for_album
+        AS
+        SELECT
+			t.song_name,
+            f.danceability,
+            f.energy,
+            f.instrumentalness, 
+            f.liveness,
+            f.loudness,
+            f.speechiness,
+            f.tempo,
+            f.valence 
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+		WHERE alb.album_id = '2eE8BVirX9VF8Di9hD90iw';
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM audio_features_for_album;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+def popularity_by_artists_in_genre(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS popularity_by_artists_in_genre;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS popularity_by_artists_in_genre
+        AS
+        SELECT
+			a.popularity,
+			a.artist_name,
+			a.genre
+        FROM artist a
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM popularity_by_artists_in_genre;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def tempos_by_genre(conn):
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS tempos_by_genre;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS tempos_by_genre
+        AS
+        SELECT
+			CAST(f.tempo AS INT) tempo,
+            a.artist_name,
+			t.song_name,
+			a.genre
+		FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+        WHERE f.tempo != 0
+		ORDER BY 4;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM tempos_by_genre;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+# def sum_albums_released_by_artist_per_year(conn):
+#  SELECT
+# 	year, 
+# 	SUM(total_albums),
+# 	artist
+# FROM (
+# 		SELECT
+#             strftime('%Y', alb.release_date) year,
+#             COUNT(alb.album_name) total_albums,
+#             a.artist_name artist
+#         FROM album alb
+#         JOIN artist a
+#             ON a.artist_id = alb.artist_id 
+# 		WHERE artist = 'Becky G'
+# 		GROUP BY 3, strftime('%Y', alb.release_date)
+#         ORDER BY 3, 1) AS alb_by_year
+# GROUP BY year           
+		
+# 		SELECT
+#             strftime('%Y', alb.release_date) release_date,
+#             COUNT(alb.album_name) total_albums,
+#             a.artist_name artist_name
+#         FROM album alb
+#         JOIN artist a
+#             ON a.artist_id = alb.artist_id 
+# 		GROUP BY 3, strftime('%Y', alb.release_date)
+#         ORDER BY 3, 1
+
+
 def main():
     database = "spotify.db"
 
@@ -303,6 +508,19 @@ def main():
         print("Query of artists who have more than 20 albums")
         artists_w_atleast_20_albums(conn)
 
+        print("Query of avg audio features of all the songs in each genre")
+        avg_audio_features_by_genre(conn)
+
+        print("Query of the audio features of one of Jack Harlow's albums")
+        audio_features_for_album(conn)
+
+        print("Query of avg audio features by artist")
+        avg_audio_features_by_artist(conn)
+
+        print("Query popularity of artists in the same genre")
+        popularity_by_artists_in_genre(conn)
+
+        tempos_by_genre(conn)
 
 if __name__ == '__main__':
     main()

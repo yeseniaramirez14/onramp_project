@@ -25,13 +25,13 @@ fav_artists = [
     "Led Zeppelin",
     "Billie Eilish",
     "J. Cole",
-    "The Beatles",
     "Rihanna",
     "Foo Fighters",
     "Natti Natasha",
     "Black Sabbath",
     "Van Halen",
-    "Pink Floyd"
+    "Pink Floyd",
+    "Britney Spears"
 ]
 
 
