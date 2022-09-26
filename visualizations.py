@@ -257,23 +257,23 @@ def main():
     # create a database connection
     conn = create_connection(database)
     with conn:
-        print("BARPLOT: Visualization of top artists by followers")
-        top_artists_by_followers_vis(conn)
+        # print("BARPLOT: Visualization of top artists by followers")
+        # top_artists_by_followers_vis(conn)
 
-        print("BARPLOT: Visualization of top songs by duration")
-        top_songs_by_duration_vis(conn)
+        # print("BARPLOT: Visualization of top songs by duration")
+        # top_songs_by_duration_vis(conn)
 
-        print("LMPLOT: Visualization of energy vs danceability by genre")
-        energy_danceability_by_genre(conn)
+        # print("LMPLOT: Visualization of energy vs danceability by genre")
+        # energy_danceability_by_genre(conn)
 
-        # print("RELPLOT: Visualization of audio features for album")
-        # audio_features_for_album_vis(conn)
+        # # print("RELPLOT: Visualization of audio features for album")
+        # # audio_features_for_album_vis(conn)
 
-        print("BOXPLOT: Visualization of the average audio features by artist")
-        avg_audio_features_by_artist(conn)
+        # print("BOXPLOT: Visualization of the average audio features by artist")
+        # avg_audio_features_by_artist(conn)
 
-        print("VIOLINPLOT: Visualization of artist's popularity in genre")
-        popularity_by_artists_in_genre_vis(conn)
+        # print("VIOLINPLOT: Visualization of artist's popularity in genre")
+        # popularity_by_artists_in_genre_vis(conn)
 
         print("VIOLINPLOT: Visualization of average tempos by genre")
         tempos_by_genre_violin_vis(conn)
@@ -284,8 +284,8 @@ def main():
         print("Visualization of tempos by genre overlayed with tempos by artist")
         tempos_by_genre_overlay_vis(conn)
 
-        print("Visualization of danceability, tempo and popularity based on genre")
-        pairplots(conn)
+        # print("Visualization of danceability, tempo and popularity based on genre")
+        # pairplots(conn)
 
 if __name__ == '__main__':
     main()
