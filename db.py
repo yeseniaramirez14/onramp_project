@@ -15,7 +15,7 @@ fav_artists = [
     "Drake",
     "Becky G",
     "Jack Harlow",
-    "Karol G",
+    "KAROL G",
     "Bad Bunny",
     "J Balvin",
     "Grupo Firme",
@@ -73,7 +73,6 @@ def insert_artists(conn):
         except:
             print(f'Artist, {artist_info["artist_name"]}, already exists in the database')
 
-    conn.commit()
     print("****** ARTIST DATA INSERTED INTO TABLE ******")
 
 
@@ -92,7 +91,7 @@ def insert_albums(conn):
 
     in_db = False
     for artist_id in artist_ids:
-        albums = sp.artist_albums(artist_id, album_type="album", country="US", limit=50)
+        albums = sp.artist_albums(artist_id, album_type="album", limit=50, country="US")
         for album in albums["items"]:
             album_info = {
                 "album_id": album["id"],
@@ -135,7 +134,6 @@ def insert_albums(conn):
 
             in_db = False
         
-    conn.commit()
     print("****** ALBUM DATA INSERTED INTO TABLE ******")
 
 
@@ -172,7 +170,6 @@ def insert_tracks(conn):
             except:
                 print(f'Track, {track_info["song_name"]}, already exists in the database')
 
-    conn.commit()
 
     print("****** TRACK DATA INSERTED INTO TABLE ******")
 
@@ -221,7 +218,6 @@ def insert_features(conn):
         starting_idx = stopping_idx
         stopping_idx += 100
 
-    conn.commit()
     print("****** FEATURE DATA INSERTED INTO TABLE ******")
     
         
