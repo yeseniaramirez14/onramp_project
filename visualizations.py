@@ -89,6 +89,7 @@ def tempos_by_genre_strip_vis(conn):
     plt.show()
 
 
+# not using this -- too overwhelmed 
 def tempos_by_genre_overlay_vis(conn):
     df = pd.read_sql_query("SELECT * FROM tempos_by_genre;", conn)
     plt.figure(figsize=(12,6))
