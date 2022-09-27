@@ -6,11 +6,13 @@ from tables import create_connection
 
 rcParams.update({'figure.autolayout': True})
 
+
+# this one works!
 def top_artists_by_followers_vis(conn):
-    df = pd.read_sql_query("SELECT * FROM top_artists_by_followers", conn)
+    df = pd.read_sql_query("SELECT * FROM top_20_artists_by_followers", conn)
     plt.figure(figsize=(14,5))
     plt.tight_layout()
-    ax = sns.barplot(df, y='artist_name', x="num_followers", hue="genre", dodge=False)
+    ax = sns.barplot(df, y='artist_name', x="followers", hue="genre", dodge=False)
     ax.set_title("Top Artists by Followers")
     ax.set_ylabel("Artist Name")
     ax.set_xlabel("Number of Followers")
@@ -18,11 +20,12 @@ def top_artists_by_followers_vis(conn):
     plt.show()
 
 
+# needs work
 def top_songs_by_duration_vis(conn):
-    df = pd.read_sql_query("SELECT * FROM top_songs_by_duration", conn)
+    df = pd.read_sql_query("SELECT * FROM top_10_songs_by_duration_per_artist", conn)
     plt.figure(figsize=(14,5))
     plt.tight_layout()
-    ax = sns.barplot(df, y="song_name", x="duration_ms", hue="genre", dodge=False)
+    ax = sns.barplot(df, y="song_name", x="duration_ms", dodge=False)
     ax.set_title("Top Song of Artists by Duration")
     ax.set_ylabel("Song Name")
     ax.set_xlabel("Song Duration (ms)")
@@ -31,23 +34,31 @@ def top_songs_by_duration_vis(conn):
 
 
 def energy_danceability_by_genre(conn):
-    df = pd.read_sql_query("SELECT * FROM audio_features_by_genre", conn)
-    g = sns.lmplot(x='energy', y='danceability', data=df, hue="genre", legend=False, aspect=2)
+    df = pd.read_sql_query("SELECT * FROM avg_audio_features_by_genre", conn)
+    g = sns.lmplot(x='energy', y='loudness', data=df, hue="genre", legend=False, aspect=2,)
+    g.set(xlabel='Energy', ylabel='Loudness', title='Energy vs Loudness by Genre')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title="Genre")
-    g.set(ylim=(0,1), xlim=(0,1), xlabel='Energy', ylabel='Danceability', title='Energy vs Danceability by Genre')
     plt.show()
 
 
-# def audio_features_for_album_vis(conn):
-#     df = pd.read_sql_query("SELECT * FROM audio_features_by_genre", conn)
-#     sns.relplot(data=df, x="popularity", y='energy', col='genre', hue='genre', row='energy', kind='line')
-    # g = sns.FacetGrid(df, col='genre', hue='genre')
-    # g.map(plt.plot, 'popularity')
-    # plt.show()
+def loudness_energy_by_genre_vis(conn):
+    df = pd.read_sql_query("SELECT * FROM loudness_energy_by_genre", conn)
+    g = sns.lmplot(x='energy', y='loudness', data=df, hue="genre", legend=False, aspect=2,)
+    g.set(xlabel='Energy', ylabel='Loudness', title='Energy vs Loudness by Genre')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title="Genre")
+    plt.show()
+
+
+def audio_features_for_album_vis(conn):
+    df = pd.read_sql_query("SELECT * FROM avg_audio_features_by_genre", conn)
+    sns.relplot(data=df, x="popularity", y='energy', col='genre', hue='genre', row='energy', kind='line')
+    g = sns.FacetGrid(df, col='genre', hue='genre')
+    g.map(plt.plot, 'popularity')
+    plt.show()
 
 
 def avg_audio_features_by_artist(conn):
-    df = pd.read_sql_query("SELECT * FROM avg_audio_features_by_artist;", conn)
+    df = pd.read_sql_query("SELECT * FROM avg_audio_features_by_artist", conn)
     g = sns.boxplot(df)
     g.set(ylim=(0,1), title='Average Audio Features by Artist')
     plt.show()
@@ -78,6 +89,7 @@ def tempos_by_genre_strip_vis(conn):
     plt.show()
 
 
+# not using this -- too overwhelmed 
 def tempos_by_genre_overlay_vis(conn):
     df = pd.read_sql_query("SELECT * FROM tempos_by_genre;", conn)
     plt.figure(figsize=(12,6))
@@ -257,35 +269,38 @@ def main():
     # create a database connection
     conn = create_connection(database)
     with conn:
-        print("BARPLOT: Visualization of top artists by followers")
-        top_artists_by_followers_vis(conn)
+        # print("BARPLOT: Visualization of top artists by followers")
+        # top_artists_by_followers_vis(conn)
 
-        print("BARPLOT: Visualization of top songs by duration")
-        top_songs_by_duration_vis(conn)
+        # print("BARPLOT: Visualization of top songs by duration")
+        # top_songs_by_duration_vis(conn)
+
+        # print("LMPLOT: Visualization of energy vs danceability by genre")
+        # energy_danceability_by_genre(conn)
 
         print("LMPLOT: Visualization of energy vs danceability by genre")
-        energy_danceability_by_genre(conn)
+        loudness_energy_by_genre_vis(conn)
 
         # print("RELPLOT: Visualization of audio features for album")
         # audio_features_for_album_vis(conn)
 
-        print("BOXPLOT: Visualization of the average audio features by artist")
-        avg_audio_features_by_artist(conn)
+        # print("BOXPLOT: Visualization of the average audio features by artist")
+        # avg_audio_features_by_artist(conn)
 
-        print("VIOLINPLOT: Visualization of artist's popularity in genre")
-        popularity_by_artists_in_genre_vis(conn)
+        # print("VIOLINPLOT: Visualization of artist's popularity in genre")
+        # popularity_by_artists_in_genre_vis(conn)
 
-        print("VIOLINPLOT: Visualization of average tempos by genre")
-        tempos_by_genre_violin_vis(conn)
+        # print("VIOLINPLOT: Visualization of average tempos by genre")
+        # tempos_by_genre_violin_vis(conn)
         
-        print("STRIPPLOT: Visualization of song tempos by genre and artist")
-        tempos_by_genre_strip_vis(conn)
+        # print("STRIPPLOT: Visualization of song tempos by genre and artist")
+        # tempos_by_genre_strip_vis(conn)
 
-        print("Visualization of tempos by genre overlayed with tempos by artist")
-        tempos_by_genre_overlay_vis(conn)
+        # print("Visualization of tempos by genre overlayed with tempos by artist")
+        # tempos_by_genre_overlay_vis(conn)
 
-        print("Visualization of danceability, tempo and popularity based on genre")
-        pairplots(conn)
+        # print("Visualization of danceability, tempo and popularity based on genre")
+        # pairplots(conn)
 
 if __name__ == '__main__':
     main()

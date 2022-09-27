@@ -2,37 +2,41 @@ from tables import create_connection
 from prettytable import from_db_cursor
 
 
-def top_songs_by_duration(conn):
+def top_10_songs_by_duration_per_artist(conn):
     """
-    Query top songs by artist in terms of duration_ms
+    Query top 10 songs by artist in terms of duration_ms
     :param conn: the Connection object
     :return:
     """   
     cur = conn.cursor()
-    cur.execute("DROP VIEW IF EXISTS top_songs_by_duration;")
+    cur.execute("DROP VIEW IF EXISTS top_10_songs_by_duration_per_artist;")
     create_view = """
-        CREATE VIEW IF NOT EXISTS top_songs_by_duration
+        CREATE VIEW IF NOT EXISTS top_10_songs_by_duration_per_artist
         AS
-        SELECT
-            MAX(t.duration_ms) duration_ms,
-            strftime('%H:%M:%S', t.duration_ms/1000, 'unixepoch') minutes,
-            t.song_name song_name,
-            a.artist_name artist_name,
-            a.genre genre
-        FROM track t
-        JOIN album alb
-            ON alb.album_id = t.album_id
-        JOIN artist a
-            ON a.artist_id = alb.artist_id 
-        GROUP BY 4
-        ORDER BY 1 DESC, 2;    
+        SELECT artist_name, song_name, duration_ms, minutes
+        FROM (
+            SELECT
+                a.artist_name,
+                t.song_name,
+                t.duration_ms,
+                strftime('%H:%M:%S', t.duration_ms/1000, 'unixepoch') minutes,
+                row_number() over (
+                    PARTITION BY a.artist_name 
+                    ORDER BY a.artist_name, t.duration_ms DESC
+                ) as longest_duration
+            FROM track t
+            JOIN album alb
+                ON alb.album_id = t.album_id
+            JOIN artist a
+                ON a.artist_id = alb.artist_id) duration_ranks
+        WHERE longest_duration <= 10;
     """
     cur.execute(create_view)
     conn.commit()
 
     select_query = """
         SELECT *
-        FROM top_songs_by_duration;
+        FROM top_10_songs_by_duration_per_artist;
     """
     cur.execute(select_query)
 
@@ -40,36 +44,37 @@ def top_songs_by_duration(conn):
     print(view)
 
 
-def top_artists_by_followers(conn):
+def top_20_artists_by_followers(conn):
     """
-    Query top artists by the number of followers
+    Query top 20 artists in the db by the number of followers
     :param conn: the Connection object
     :return:
     """   
     cur = conn.cursor()
-    cur.execute("DROP VIEW IF EXISTS top_artists_by_followers;")
+    cur.execute("DROP VIEW IF EXISTS top_20_artists_by_followers;")
     create_view = """
-        CREATE VIEW IF NOT EXISTS top_artists_by_followers
+        CREATE VIEW IF NOT EXISTS top_20_artists_by_followers
         AS
         SELECT
-			a.followers num_followers,
-			a.popularity popularity,
-			a.artist_name artist_name,
-			a.genre genre,
+			a.artist_name,
+			a.followers,
+			a.popularity,
+			a.genre,
 			COUNT(*) num_albums,
 			STRFTIME('%m-%d-%Y', MAX(alb.release_date)) latest_album_release_date
         FROM artist a
         JOIN album alb
             ON alb.artist_id = a.artist_id
-		GROUP BY 3
-        ORDER BY 1 DESC;     
+		GROUP BY 1
+        ORDER BY 2 DESC
+        LIMIT 20;   
     """
     cur.execute(create_view)
     conn.commit()
 
     select_query = """
         SELECT *
-        FROM top_artists_by_followers;
+        FROM top_20_artists_by_followers;
     """
     cur.execute(select_query)
 
@@ -77,38 +82,43 @@ def top_artists_by_followers(conn):
     print(view)
 
 
-def top_songs_by_tempo(conn):
+def top_10_songs_by_tempo_per_artist(conn):
     """
-    Query top songs by artists in terms of tempo
+    Query top 10 songs by artists in terms of tempo
     :param conn: the Connection object
     :return:
     """   
     cur = conn.cursor()
-    cur.execute("DROP VIEW IF EXISTS top_songs_by_tempo;")
+    cur.execute("DROP VIEW IF EXISTS top_10_songs_by_tempo_per_artist;")
     create_view = """
-        CREATE VIEW IF NOT EXISTS top_songs_by_tempo
+        CREATE VIEW IF NOT EXISTS top_10_songs_by_tempo_per_artist
         AS
-        SELECT
-            printf('%.3f', MAX(f.tempo)) tempo,
-            t.song_name song_name,
-            a.artist_name artist_name,
-            alb.album_name album_name
-        FROM track_feature f
-        JOIN track t
-            ON t.track_id = f.track_id
-        JOIN album alb
-            ON alb.album_id = t.album_id
-        JOIN artist a
-            ON a.artist_id = alb.artist_id 
-        GROUP BY 3
-        ORDER BY 1 DESC;     
+        SELECT artist_name, song_name, tempo, album_name
+		FROM (
+			SELECT
+				a.artist_name,
+				t.song_name,
+				printf('%.3f', f.tempo) tempo,
+				alb.album_name,
+				row_number() over (
+					PARTITION BY a.artist_name
+					ORDER BY a.artist_name, f.tempo DESC
+				) as highest_tempo
+			FROM track_feature f
+			JOIN track t
+				ON t.track_id = f.track_id
+			JOIN album alb
+				ON alb.album_id = t.album_id
+			JOIN artist a
+				ON a.artist_id = alb.artist_id) tempo_ranks
+		WHERE highest_tempo <= 10;
     """
     cur.execute(create_view)
     conn.commit()
 
     select_query = """
         SELECT *
-        FROM top_songs_by_tempo;
+        FROM top_10_songs_by_tempo_per_artist;
     """
     cur.execute(select_query)
 
@@ -117,13 +127,18 @@ def top_songs_by_tempo(conn):
 
 
 def num_songs_albums_by_artist(conn):
+    """
+    Query how many songs and albums each artist has 
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS num_songs_albums_by_artist;")
     create_view = """
         CREATE VIEW IF NOT EXISTS num_songs_albums_by_artist
         AS
         SELECT
-            a.artist_name artist_name,
+            a.artist_name,
             COUNT(alb.album_name) total_albums,
             SUM(alb.total_tracks) total_songs
         FROM album alb
@@ -146,6 +161,11 @@ def num_songs_albums_by_artist(conn):
 
 
 def albums_released_in_90s(conn):
+    """
+    Query the albums that were released in the 1990's
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS albums_released_in_90s;")
     create_view = """
@@ -153,8 +173,8 @@ def albums_released_in_90s(conn):
         AS
         SELECT
             strftime('%m-%d-%Y', alb.release_date) release_date,
-            alb.album_name album_name,
-            a.artist_name artist_name
+            alb.album_name,
+            a.artist_name
         FROM album alb
         JOIN artist a
             ON a.artist_id = alb.artist_id 
@@ -175,15 +195,20 @@ def albums_released_in_90s(conn):
 
 
 def top_20_songs_by_danceability(conn):
+    """
+    Query top 20 songs by danceability 
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS top_20_songs_by_danceability;")
     create_view = """
         CREATE VIEW IF NOT EXISTS top_20_songs_by_danceability
         AS
         SELECT
-		    printf('%.3f', f.danceability) danceability,
-            t.song_name song_name,
-            a.artist_name artist_name
+		    a.artist_name,
+            t.song_name,
+            printf('%.3f', f.danceability) danceability
         FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id
@@ -192,7 +217,7 @@ def top_20_songs_by_danceability(conn):
         JOIN track_feature f
             ON f.track_id = t.track_id
 		WHERE f.danceability >= 0.80
-        ORDER BY 1 DESC
+        ORDER BY 3 DESC
 		LIMIT 20;
     """
 
@@ -210,15 +235,20 @@ def top_20_songs_by_danceability(conn):
 
 
 def avg_energy_of_artist(conn):
+    """
+    Query average energy level of each artist 
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS avg_energy_of_artist;")
     create_view = """
         CREATE VIEW IF NOT EXISTS avg_energy_of_artist
         AS
         SELECT
-		    printf('%.3f', AVG(f.energy)) energy,
-            a.artist_name artist_name,
-			a.genre genre
+            a.artist_name,
+			a.genre,
+            printf('%.3f', AVG(f.energy)) energy
         FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id
@@ -226,8 +256,8 @@ def avg_energy_of_artist(conn):
             ON t.album_id = alb.album_id
         JOIN track_feature f
             ON f.track_id = t.track_id
-		GROUP BY 2
-        ORDER BY 1 DESC;
+		GROUP BY 1
+        ORDER BY 3 DESC;
     """
 
     cur.execute(create_view)
@@ -244,13 +274,18 @@ def avg_energy_of_artist(conn):
 
 
 def artists_w_atleast_20_albums(conn):
+    """
+    Query artists with at least 20 albums
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS artists_w_atleast_20_albums;")
     create_view = """
         CREATE VIEW IF NOT EXISTS artists_w_atleast_20_albums
         AS
         SELECT
-            a.artist_name artist_name,
+            a.artist_name,
             COUNT(alb.album_name) total_albums
 		FROM album alb
         JOIN artist a
@@ -274,6 +309,11 @@ def artists_w_atleast_20_albums(conn):
 
 
 def avg_audio_features_by_genre(conn):
+    """
+    Query average audio features by genre
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS avg_audio_features_by_genre;")
     create_view = """
@@ -281,15 +321,15 @@ def avg_audio_features_by_genre(conn):
         AS
         SELECT
             a.genre,
-			AVG(a.popularity) popularity,
-            AVG(f.danceability) danceability,
-            AVG(f.energy) energy,
-            AVG(f.instrumentalness) instrumentalness, 
-            AVG(f.liveness) liveness,
-            AVG(f.loudness) loudness,
-            AVG(f.speechiness) speechiness,
-            AVG(f.tempo) tempo,
-            AVG(f.valence) valence 
+			printf('%.1f', AVG(a.popularity)) popularity,
+            printf('%.3f', AVG(f.danceability)) danceability,
+            printf('%.3f', AVG(f.energy)) energy,
+            printf('%.3f', AVG(f.instrumentalness)) instrumentalness, 
+            printf('%.3f', AVG(f.liveness)) liveness,
+            printf('%.3f', AVG(f.loudness)) loudness,
+            printf('%.3f', AVG(f.speechiness)) speechiness,
+            printf('%.3f', AVG(f.tempo)) tempo,
+            printf('%.3f', AVG(f.valence)) valence 
         FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id 
@@ -298,7 +338,7 @@ def avg_audio_features_by_genre(conn):
         JOIN track_feature f 
             ON f.track_id = t.track_id
         GROUP BY 1
-		ORDER BY 2 DESC;
+        ORDER BY 2 DESC;
     """
 
     cur.execute(create_view)
@@ -314,13 +354,57 @@ def avg_audio_features_by_genre(conn):
     print(view)
 
 
+def loudness_energy_by_genre(conn):
+    """
+    Query average audio features by genre
+    :param conn: the Connection object
+    :return:
+    """   
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS loudness_energy_by_genre;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS loudness_energy_by_genre
+        AS
+        SELECT
+            a.genre,
+            f.energy,
+			f.loudness
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+        ORDER BY 1;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM loudness_energy_by_genre;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
 def avg_audio_features_by_artist(conn):
+    """
+    Query average audio features by artist
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS avg_audio_features_by_artist;")
     create_view = """
         CREATE VIEW IF NOT EXISTS avg_audio_features_by_artist
         AS
         SELECT
+            a.artist_name,
             AVG(f.danceability) danceability,
             AVG(f.energy) energy,
             AVG(f.instrumentalness) instrumentalness, 
@@ -335,6 +419,7 @@ def avg_audio_features_by_artist(conn):
         JOIN track_feature f 
             ON f.track_id = t.track_id
         GROUP BY a.artist_id
+        ORDER BY 1;
     """
 
     cur.execute(create_view)
@@ -351,6 +436,12 @@ def avg_audio_features_by_artist(conn):
 
 
 def audio_features_for_album(conn):
+    """
+    Query audio features for Jack Harlow's album, 
+    Come Home The Kids Miss You
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS audio_features_for_album;")
     create_view = """
@@ -358,14 +449,14 @@ def audio_features_for_album(conn):
         AS
         SELECT
 			t.song_name,
-            f.danceability,
-            f.energy,
-            f.instrumentalness, 
-            f.liveness,
-            f.loudness,
-            f.speechiness,
-            f.tempo,
-            f.valence 
+            printf('%.3f', f.danceability) danceability,
+            printf('%.3f', f.energy) energy,
+            printf('%.3f', f.instrumentalness) instrumentalness, 
+            printf('%.3f', f.liveness) liveness,
+            printf('%.3f', f.loudness) loudness,
+            printf('%.3f', f.speechiness) speechiness,
+            printf('%.3f', f.tempo) tempo,
+            printf('%.3f', f.valence) valence 
         FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id 
@@ -373,7 +464,8 @@ def audio_features_for_album(conn):
             ON t.album_id = alb.album_id
         JOIN track_feature f 
             ON f.track_id = t.track_id
-		WHERE alb.album_id = '2eE8BVirX9VF8Di9hD90iw';
+		WHERE alb.album_id = '2eE8BVirX9VF8Di9hD90iw'
+        ORDER BY 1;
     """
 
     cur.execute(create_view)
@@ -388,17 +480,24 @@ def audio_features_for_album(conn):
     view = from_db_cursor(cur)
     print(view)
 
+
 def popularity_by_artists_in_genre(conn):
+    """
+    Query popularity by artists
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS popularity_by_artists_in_genre;")
     create_view = """
         CREATE VIEW IF NOT EXISTS popularity_by_artists_in_genre
         AS
         SELECT
-			a.popularity,
 			a.artist_name,
-			a.genre
+			a.genre,
+            a.popularity
         FROM artist a
+        ORDER BY 3 DESC;
     """
 
     cur.execute(create_view)
@@ -415,16 +514,21 @@ def popularity_by_artists_in_genre(conn):
 
 
 def tempos_by_genre(conn):
+    """
+    Query tempos of songs by genre 
+    :param conn: the Connection object
+    :return:
+    """   
     cur = conn.cursor()
     cur.execute("DROP VIEW IF EXISTS tempos_by_genre;")
     create_view = """
         CREATE VIEW IF NOT EXISTS tempos_by_genre
         AS
         SELECT
+            a.genre,
 			CAST(f.tempo AS INT) tempo,
             a.artist_name,
-			t.song_name,
-			a.genre
+			t.song_name
 		FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id 
@@ -433,7 +537,7 @@ def tempos_by_genre(conn):
         JOIN track_feature f 
             ON f.track_id = t.track_id
         WHERE f.tempo != 0
-		ORDER BY 4;
+		ORDER BY 1, 2 DESC, 3;
     """
 
     cur.execute(create_view)
@@ -450,22 +554,22 @@ def tempos_by_genre(conn):
 
 
 # def sum_albums_released_by_artist_per_year(conn):
-#  SELECT
-# 	year, 
-# 	SUM(total_albums),
-# 	artist
-# FROM (
-# 		SELECT
-#             strftime('%Y', alb.release_date) year,
-#             COUNT(alb.album_name) total_albums,
-#             a.artist_name artist
-#         FROM album alb
-#         JOIN artist a
-#             ON a.artist_id = alb.artist_id 
-# 		WHERE artist = 'Becky G'
-# 		GROUP BY 3, strftime('%Y', alb.release_date)
-#         ORDER BY 3, 1) AS alb_by_year
-# GROUP BY year           
+#     SELECT
+#         year, 
+#         SUM(total_albums),
+#         artist
+#     FROM (
+#             SELECT
+#                 strftime('%Y', alb.release_date) year,
+#                 COUNT(alb.album_name) total_albums,
+#                 a.artist_name artist
+#             FROM album alb
+#             JOIN artist a
+#                 ON a.artist_id = alb.artist_id 
+#             WHERE artist = 'Becky G'
+#             GROUP BY 3, strftime('%Y', alb.release_date)
+#             ORDER BY 3, 1) AS alb_by_year
+#     GROUP BY year           
 		
 # 		SELECT
 #             strftime('%Y', alb.release_date) release_date,
@@ -484,14 +588,14 @@ def main():
     # create a database connection
     conn = create_connection(database)
     with conn:
-        print("Query top songs by artist in terms of duration_ms")
-        top_songs_by_duration(conn)
+        print("Query top 10 songs per artist in terms of duration_ms")
+        top_10_songs_by_duration_per_artist(conn)
 
-        print("Query top artists by the number of followers")
-        top_artists_by_followers(conn)
+        print("Query top 20 artists by the number of followers")
+        top_20_artists_by_followers(conn)
 
-        print("Query top songs by artist in terms of tempo")
-        top_songs_by_tempo(conn)
+        print("Query 10 top songs per artist in terms of tempo")
+        top_10_songs_by_tempo_per_artist(conn)
 
         print("Query artists with the most albums and songs")
         num_songs_albums_by_artist(conn)
@@ -511,7 +615,10 @@ def main():
         print("Query of avg audio features of all the songs in each genre")
         avg_audio_features_by_genre(conn)
 
-        print("Query of the audio features of one of Jack Harlow's albums")
+        print("Query of loudness vs energy by genre")
+        loudness_energy_by_genre(conn)
+
+        print("Query of the audio features for Jack Harlow's album, Come Home The Kids Miss You")
         audio_features_for_album(conn)
 
         print("Query of avg audio features by artist")
@@ -520,6 +627,7 @@ def main():
         print("Query popularity of artists in the same genre")
         popularity_by_artists_in_genre(conn)
 
+        print("Query tempos of songs by genre")
         tempos_by_genre(conn)
 
 if __name__ == '__main__':

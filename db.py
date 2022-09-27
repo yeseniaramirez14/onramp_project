@@ -16,7 +16,7 @@ fav_artists = [
     "Drake",
     "Becky G",
     "Jack Harlow",
-    "Karol G",
+    "KAROL G",
     "Bad Bunny",
     "J Balvin",
     "Grupo Firme",
@@ -94,7 +94,7 @@ def insert_albums(conn):
     in_db, deluxe = False, False
     # deluxe_variations = ["(Deluxe", "Deluxe)", "Deluxe Edition", "Deluxe Version", "Super Deluxe"]
     for artist_id in artist_ids:
-        albums = sp.artist_albums(artist_id, album_type="album", country="US", limit=50)
+        albums = sp.artist_albums(artist_id, album_type="album", limit=50, country="US")
         for album in albums["items"]:
             album_info = {
                 "album_id": album["id"],
