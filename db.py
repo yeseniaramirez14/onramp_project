@@ -7,6 +7,7 @@ from pprint import pprint
 import pandas as pd 
 from tables import create_connection, create_album_table, create_artist_table, create_features_table, create_track_table
 
+
 load_dotenv()
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
@@ -46,6 +47,7 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
     
     return True
 
+
 #**** INGESTION && TRANSFORMATION ****# 
 def insert_artists(conn):
     create_artist_table(conn)
@@ -73,7 +75,6 @@ def insert_artists(conn):
         except:
             print(f'Artist, {artist_info["artist_name"]}, already exists in the database')
 
-    conn.commit()
     print("****** ARTIST DATA INSERTED INTO TABLE ******")
 
 
@@ -90,7 +91,8 @@ def insert_albums(conn):
     # fetchall() returns a list of tuples so I am converting that into a single list using list comprehension 
     artist_ids = [item[0] for item in cur.fetchall()]
 
-    in_db = False
+    in_db, deluxe = False, False
+    # deluxe_variations = ["(Deluxe", "Deluxe)", "Deluxe Edition", "Deluxe Version", "Super Deluxe"]
     for artist_id in artist_ids:
         albums = sp.artist_albums(artist_id, album_type="album", country="US", limit=50)
         for album in albums["items"]:
@@ -123,8 +125,15 @@ def insert_albums(conn):
                 if album["name"] in current_album and album["artists"][0]["id"] in current_album:
                     print(f'One version of {album["name"]} is already in the database')
                     in_db = True
+            
+            if "(Deluxe" in album["name"] or "Deluxe)" in album["name"] or "Deluxe Edition" in album["name"] or "Deluxe Version" in album["name"] or "Super Deluxe" in album["name"]:
+                deluxe = True
+
+            # for variation in deluxe_variations:
+            #     if variation in album["name"]:
+            #         deluxe = True 
    
-            if in_db == False:
+            if in_db == False and deluxe == False:
                 album_df = pd.DataFrame(album_info, index=[0])
                 check_if_valid_data(album_df)
 
@@ -133,9 +142,8 @@ def insert_albums(conn):
                 except:
                     print(f'Album, {album_info["album_name"]}, already exists in the database')
 
-            in_db = False
+            in_db, deluxe = False, False
         
-    conn.commit()
     print("****** ALBUM DATA INSERTED INTO TABLE ******")
 
 
@@ -171,8 +179,6 @@ def insert_tracks(conn):
                 track_df.to_sql("track", conn, index=False, if_exists='append')
             except:
                 print(f'Track, {track_info["song_name"]}, already exists in the database')
-
-    conn.commit()
 
     print("****** TRACK DATA INSERTED INTO TABLE ******")
 
@@ -221,10 +227,8 @@ def insert_features(conn):
         starting_idx = stopping_idx
         stopping_idx += 100
 
-    conn.commit()
     print("****** FEATURE DATA INSERTED INTO TABLE ******")
-    
-        
+
 
 def main():
     database = "spotify.db"
