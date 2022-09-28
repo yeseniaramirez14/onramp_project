@@ -16,7 +16,7 @@ fav_artists = [
     "Drake",
     "Becky G",
     "Jack Harlow",
-    "KAROL G",
+    "Karol G",
     "Bad Bunny",
     "J Balvin",
     "Grupo Firme",

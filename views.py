@@ -367,8 +367,8 @@ def loudness_energy_by_genre(conn):
         AS
         SELECT
             a.genre,
-            f.energy,
-			f.loudness
+            printf('%.3f', f.energy) energy,
+			printf('%.3f', f.loudness) loudness
         FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id 
@@ -404,13 +404,13 @@ def avg_audio_features_by_artist(conn):
         CREATE VIEW IF NOT EXISTS avg_audio_features_by_artist
         AS
         SELECT
-            a.artist_name,
-            AVG(f.danceability) danceability,
-            AVG(f.energy) energy,
-            AVG(f.instrumentalness) instrumentalness, 
-            AVG(f.liveness) liveness,
-            AVG(f.speechiness) speechiness,
-            AVG(f.valence) valence 
+            a.artist_name Artist,
+            printf('%.3f', AVG(f.danceability)) Danceability,
+            printf('%.3f', AVG(f.energy)) Energy,
+            printf('%.3f', AVG(f.tempo)) Tempo,
+            printf('%.3f', AVG(f.speechiness)) Speechiness,
+            printf('%.3f', AVG(f.instrumentalness)) Instrumentalness, 
+            printf('%.3f', AVG(f.valence)) Valence 
         FROM artist a
         JOIN album alb
             ON a.artist_id = alb.artist_id 
@@ -428,6 +428,40 @@ def avg_audio_features_by_artist(conn):
     select_query = """
         SELECT *
         FROM avg_audio_features_by_artist;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def audio_features_correlations(conn):
+    """
+    Query average audio features by artist
+    :param conn: the Connection object
+    :return:
+    """   
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS audio_features_correlations;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS audio_features_correlations
+        AS
+        SELECT
+            printf('%.3f', f.danceability) Danceability,
+            printf('%.3f', f.energy) Energy,
+            printf('%.3f', f.tempo) Tempo,
+            printf('%.3f', f.speechiness) Speechiness,
+            printf('%.3f', f.instrumentalness) Instrumentalness, 
+            printf('%.3f', f.valence) Valence 
+        FROM track_feature f
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM audio_features_correlations;
     """
     cur.execute(select_query)
 
@@ -582,53 +616,140 @@ def tempos_by_genre(conn):
 #         ORDER BY 3, 1
 
 
+def valence_popularity_by_genre(conn):
+    """
+    Query average audio features by genre
+    :param conn: the Connection object
+    :return:
+    """   
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS valence_popularity_by_genre;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS valence_popularity_by_genre
+        AS
+        SELECT
+            a.genre,
+            printf('%.3f', AVG(f.valence)) valence,
+			printf('%.1f', AVG(a.popularity)) popularity
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+        GROUP BY 1
+        ORDER BY 1;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM valence_popularity_by_genre;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
+def valence_popularity_by_artist(conn):
+    """
+    Query average audio features by genre
+    :param conn: the Connection object
+    :return:
+    """   
+    cur = conn.cursor()
+    cur.execute("DROP VIEW IF EXISTS valence_popularity_by_artist;")
+    create_view = """
+        CREATE VIEW IF NOT EXISTS valence_popularity_by_artist
+        AS
+        SELECT
+            a.artist_name artist,
+            printf('%.3f', AVG(f.valence)) valence,
+			printf('%.1f', AVG(a.popularity)) popularity
+        FROM artist a
+        JOIN album alb
+            ON a.artist_id = alb.artist_id 
+        JOIN track t
+            ON t.album_id = alb.album_id
+        JOIN track_feature f 
+            ON f.track_id = t.track_id
+        GROUP BY 1
+        ORDER BY 1;
+    """
+
+    cur.execute(create_view)
+    conn.commit()
+
+    select_query = """
+        SELECT *
+        FROM valence_popularity_by_artist;
+    """
+    cur.execute(select_query)
+
+    view = from_db_cursor(cur)
+    print(view)
+
+
 def main():
     database = "spotify.db"
 
     # create a database connection
     conn = create_connection(database)
     with conn:
-        print("Query top 10 songs per artist in terms of duration_ms")
+        # 1: top 10 songs per artist in terms of duration_ms
         top_10_songs_by_duration_per_artist(conn)
 
-        print("Query top 20 artists by the number of followers")
+        # 2: top 20 artists by the number of followers
         top_20_artists_by_followers(conn)
 
-        print("Query 10 top songs per artist in terms of tempo")
+        # 3: top 10 songs per artist in terms of tempo
         top_10_songs_by_tempo_per_artist(conn)
 
-        print("Query artists with the most albums and songs")
+        # 4: artists with the most albums and songs
         num_songs_albums_by_artist(conn)
 
-        print("Query albums released in the 90s")
+        # 5: albums released in the 90s
         albums_released_in_90s(conn)
 
-        print("Query top 20 songs with the highest danceability")
+        # 6: top 20 songs with the highest danceability
         top_20_songs_by_danceability(conn)
 
-        print("Query avg energy of artist")
+        # 7: avg energy of artist
         avg_energy_of_artist(conn)
 
-        print("Query of artists who have more than 20 albums")
+        # 8: artists who have more than 20 albums
         artists_w_atleast_20_albums(conn)
 
-        print("Query of avg audio features of all the songs in each genre")
+        # 9: avg audio features of all the songs in each genre
         avg_audio_features_by_genre(conn)
 
-        print("Query of loudness vs energy by genre")
+        # 10: loudness vs energy by genre
         loudness_energy_by_genre(conn)
 
-        print("Query of the audio features for Jack Harlow's album, Come Home The Kids Miss You")
-        audio_features_for_album(conn)
-
-        print("Query of avg audio features by artist")
+        # 11: avg audio features by artist
         avg_audio_features_by_artist(conn)
 
-        print("Query popularity of artists in the same genre")
+        # 12: correlation of audio features
+        audio_features_correlations(conn)
+
+        # 13: the audio features for Jack Harlow's album, Come Home The Kids Miss You
+        audio_features_for_album(conn)
+
+        # 14: popularity of artists in the same genre
         popularity_by_artists_in_genre(conn)
 
-        print("Query tempos of songs by genre")
+        # 15: tempos of songs by genre
         tempos_by_genre(conn)
+
+        # 16: valence vs popularity by genre
+        valence_popularity_by_genre(conn)    
+
+        # 17: valence vs popularity by genre  
+        valence_popularity_by_artist(conn) 
 
 if __name__ == '__main__':
     main()
