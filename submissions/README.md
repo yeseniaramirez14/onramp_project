@@ -57,6 +57,7 @@ SPOTIPY_REDIRECT_URI=""
 |     type     |  varchar(50) |                              artist                              |
 |  artist_uri  | varchar(100) |               spotify:artist:7jy3rLJdDQY21OgRLCZ9sD              |
 <br>
+
 #### Album
 
 |    column    |   datatype   |                              example                             |
@@ -71,6 +72,7 @@ SPOTIPY_REDIRECT_URI=""
 |   album_uri  | varchar(100) |               spotify:album:2FfewmvnA0wctMD64KjOxP               |
 |   artist_id  |  varchar(50) |                      7jy3rLJdDQY21OgRLCZ9sD                      |
 <br>
+
 #### Track
 |    column    |   datatype   |                        example                        |
 |:------------:|:------------:|:-----------------------------------------------------:|
@@ -84,6 +86,7 @@ SPOTIPY_REDIRECT_URI=""
 |   song_uri   | varchar(100) |          spotify:track:5k8kaD41vSP6l0Jhe9HzmY         |
 |   album_id   |  varchar(50) |                 2FfewmvnA0wctMD64KjOxP                |
 <br>
+
 #### Track_Feature
 |      column      |   datatype   |                example               |
 |:----------------:|:------------:|:------------------------------------:|
@@ -101,36 +104,36 @@ SPOTIPY_REDIRECT_URI=""
 <br>
 
 ## Directory Tree
-* [submissions/](./submissions)
-    * [data_code/](./submissions/data_code)
-        * [d1_tables.py](./submissions/data_code/d1_tables.py)
-        * [d2_db.py](./submissions/data_code/d2_db.py)
-        * [d3_views.py](./submissions/data_code/d3_views.py)
-        * [d4_visualizations.py](./submissions/data_code/d4_visualizations.py)
-    * [jupyter_notebooks/](./submissions/jupyter_notebooks)
-        * [views.ipynb](./submissions/jupyter_notebooks/views.ipynb)
-        * [visualizations.ipynb](./submissions/jupyter_notebooks/visualizations.ipynb)
-    * [visualization_imgs/](./submissions/visualization_imgs)
-        * [audio_feature_correlations.png](./submissions/visualization_imgs/audio_feature_correlations.png)
-        * [avg_audio_features_by_artist.png](./submissions/visualization_imgs/avg_audio_features_by_artist.png)
-        * [tempos_by_genre_strip.png](./submissions/visualization_imgs/tempos_by_genre_strip.png)
-        * [tempos_by_genre_violin.png](./submissions/visualization_imgs/tempos_by_genre_violin.png)
-        * [top_20_artists_by_followers.png](./submissions/visualization_imgs/top_20_artists_by_followers.png)
-        * [valence_popularity_by_artist.png](./submissions/visualization_imgs/valence_popularity_by_artist.png)
-        * [valence_popularity_by_genre.png](./submissions/visualization_imgs/valence_popularity_by_genre.png)
-    * [.gitignore](./submissions/.gitignore)
-    * [README.md](./submissions/README.md)
-    * [requirements.txt](./submissions/requirements.txt)
-    * [spotify.db](./submissions/spotify.db)
-    * [visualizations.pdf](./submissions/visualizations.pdf)
+* [submissions/](.)
+    * [data_code/](./data_code)
+        * [d1_tables.py](./data_code/d1_tables.py)
+        * [d2_db.py](./data_code/d2_db.py)
+        * [d3_views.py](./data_code/d3_views.py)
+        * [d4_visualizations.py](./data_code/d4_visualizations.py)
+    * [jupyter_notebooks/](./jupyter_notebooks)
+        * [views.ipynb](./jupyter_notebooks/views.ipynb)
+        * [visualizations.ipynb](./jupyter_notebooks/visualizations.ipynb)
+    * [visualization_imgs/](./visualization_imgs)
+        * [audio_feature_correlations.png](./visualization_imgs/audio_feature_correlations.png)
+        * [avg_audio_features_by_artist.png](./visualization_imgs/avg_audio_features_by_artist.png)
+        * [tempos_by_genre_strip.png](./visualization_imgs/tempos_by_genre_strip.png)
+        * [tempos_by_genre_violin.png](./visualization_imgs/tempos_by_genre_violin.png)
+        * [top_20_artists_by_followers.png](./visualization_imgs/top_20_artists_by_followers.png)
+        * [valence_popularity_by_artist.png](./visualization_imgs/valence_popularity_by_artist.png)
+        * [valence_popularity_by_genre.png](./visualization_imgs/valence_popularity_by_genre.png)
+    * [.gitignore](./.gitignore)
+    * [README.md](./README.md)
+    * [requirements.txt](./requirements.txt)
+    * [spotify.db](./spotify.db)
+    * [visualizations.pdf](./visualizations.pdf)
 <br>
 <br>
 
 ## File Code Explanation
 
-[<h3>```submissions/```</h3>](./submissions) 
+[<h3>```submissions/```</h3>](.) 
 
-[```d1_tables.py```](./submissions/data_code/d1_tables.py)
+[```d1_tables.py```](./data_code/d1_tables.py)
 - This python file is where I created all my tables necessary for my database
     - artist
     - album
@@ -144,7 +147,7 @@ python data_code/d1_tables.py
 ```
 <br>
 
-[```d2_db.py```](./submissions/data_code/d2_db.py)
+[```d2_db.py```](./data_code/d2_db.py)
 - This python file contains my ETL code using ```Spotipy```, ```Pandas```, ```SQL```, and ```Python```. 
 - ```check_if_valid_data``` checks the data frame for any null values and if the data frame is empty
 - There are 4 functions that are specific to one table in the database
@@ -162,7 +165,7 @@ python data_code/d2_db.py
 ```
 <br>
 
-[```d3_views.py```](./submissions/data_code/d3_views.py)
+[```d3_views.py```](./data_code/d3_views.py)
 - This python file is where I created all my SQLite views so the data can be analyzed. 
 - There are a variety of 17 different views 
     - Top 10 songs per artist in terms of duration_ms
@@ -187,11 +190,11 @@ You can run this file to create the views and insert them into the database. The
 ```sh
 python data_code/d3_views.py
 ```
-*Jupyter version available at [```jupyter_notebooks/views.ipynb```](./submissions/jupyter_notebooks/views.ipynb)*
+*Jupyter version available at [```jupyter_notebooks/views.ipynb```](./jupyter_notebooks/views.ipynb)*
 
 <br>
 
-[```d4_visualizations.py```](./submissions/data_code/d4_visualizations.py)
+[```d4_visualizations.py```](./data_code/d4_visualizations.py)
 - This python file contains the code to create 7 data visualizations using ```matplotlib``` and ```seaborn```. 
 - There are 7 different visualizations 
     - Bar plot: top 20 artists by followers 
@@ -202,13 +205,13 @@ python data_code/d3_views.py
     - Heat map: track audio feature correlations
     - Pair plot: track audio features relationship
 
-*[visualizations.pdf](./submissions/visualizations.pdf) goes into more detail about the graphs*
+*[visualizations.pdf](./visualizations.pdf) goes into more detail about the graphs*
 
 You can run this file to create the visualizations
 ```sh
 python data_code/visualizations.py
 ```
-*Jupyter version available at [```jupyter_notebooks/visualizations.ipynb```](./submissions/jupyter_notebooks/visualizations.ipynb)*
+*Jupyter version available at [```jupyter_notebooks/visualizations.ipynb```](./jupyter_notebooks/visualizations.ipynb)*
 
 <br>
 <br>
