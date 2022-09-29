@@ -17,7 +17,7 @@ def top_20_artists_by_followers_vis(conn):
     ax.set_xlabel("Number of Followers (in tens of millions)")
     plt.legend(title="Genre")
     plt.savefig("visualization_imgs/top_20_artists_by_followers")
-    plt.show()
+    # plt.show()
 
 
 def tempos_by_genre_violin_vis(conn):
@@ -27,7 +27,7 @@ def tempos_by_genre_violin_vis(conn):
     g.set(xlabel='Genre', ylabel='Tempo (beats per minute)', title='Tempos by Genre')
     plt.xticks(rotation = 30, rotation_mode='anchor', ha='right')
     plt.savefig("visualization_imgs/tempos_by_genre_violin")
-    plt.show()
+    # plt.show()
 
 
 def tempos_by_genre_strip_vis(conn):
@@ -38,7 +38,7 @@ def tempos_by_genre_strip_vis(conn):
     plt.xticks(rotation = 30, rotation_mode='anchor', ha='right')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title="Artists")
     plt.savefig("visualization_imgs/tempos_by_genre_strip")
-    plt.show()
+    # plt.show()
 
 
 def valence_popularity_by_genre_vis(conn):
@@ -54,7 +54,7 @@ def valence_popularity_by_genre_vis(conn):
     g.set(xlabel='Valence', ylabel='Popularity', title='Valence vs Popularity by Genre', xlim=(0,1), ylim=(0,100))
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title="Genre")
     plt.savefig("visualization_imgs/valence_popularity_by_genre")
-    plt.show()
+    # plt.show()
 
 
 def valence_popularity_by_artist_vis(conn):
@@ -68,9 +68,9 @@ def valence_popularity_by_artist_vis(conn):
     markers = ["<", ">", "^", "v", "p", "X", "s", "D", "o", "d", "P","*","H", "<", ">", "^", "v", "p", "X", "s"]
     g = sns.lmplot(x='valence', y='popularity', data=df, hue="artist", legend=False, aspect=2, markers=markers)
     g.set(xlabel='Valence', ylabel='Popularity', title='Valence vs Popularity by Artist', xlim=(0,1), ylim=(0,105))
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title="Genre")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title="Artist")
     plt.savefig("visualization_imgs/valence_popularity_by_artist")
-    plt.show()
+    # plt.show()
 
 
 def audio_features_correlations_vis(conn):
@@ -82,7 +82,7 @@ def audio_features_correlations_vis(conn):
     ax.set(title="Audio Feature Correlations")
     plt.xticks(rotation = 30, rotation_mode='anchor', ha='right')
     plt.savefig("visualization_imgs/audio_feature_correlations")
-    plt.show()
+    # plt.show()
 
 
 def avg_audio_features_by_artist_vis(conn):
@@ -99,7 +99,7 @@ def avg_audio_features_by_artist_vis(conn):
     sns.pairplot(ds, x_vars=["Energy", "Danceability", "Tempo", "Instrumentalness", "Valence"], y_vars=["Energy", "Danceability", "Tempo", "Instrumentalness", "Valence"], hue="Artist", corner=True, markers=markers, height=2)
     plt.suptitle("Average Audio Features by Artist", fontsize='large', fontweight='bold')
     plt.savefig("visualization_imgs/avg_audio_features_by_artist") 
-    plt.show()
+    # plt.show()
 
 
 def main():
