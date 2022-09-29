@@ -77,23 +77,23 @@ python db.py
 ```views.py```
 - This python file is where I created all my SQLite views so the data can be analyzed. 
 - There are a variety of 17 different views 
-    1. Top 10 songs per artist in terms of duration_ms
-    2. Top 20 artists by the number of followers
-    3. Top 10 songs per artist in terms of tempo
-    4. Artists listed by the number of albums and songs
-    5. Albums released in the 90s
-    6. Top 20 songs with the highest danceability
-    7. Average energy of all the artists
-    8. Artists who have more than 20 albums
-    9. Average audio features of all the songs in each genre
-    10. Loudness vs energy by genre
-    11. Average audio features by artist
-    12. Correlation of certain audio features
-    13. The audio features for Jack Harlow's album, Come Home The Kids Miss You
-    14. Popularity and genre of artists
-    15. Tempos of songs by genre 
-    16. Valence vs popularity by genre    
-    17. Valence vs popularity by artist  
+    - Top 10 songs per artist in terms of duration_ms
+    - Top 20 artists by the number of followers
+    - Top 10 songs per artist in terms of tempo
+    - Artists listed by the number of albums and songs
+    - Albums released in the 90s
+    - Top 20 songs with the highest danceability
+    - Average energy of all the artists
+    - Artists who have more than 20 albums
+    - Average audio features of all the songs in each genre
+    - Loudness vs energy by genre
+    - Average audio features by artist
+    - Correlation of certain audio features
+    - The audio features for Jack Harlow's album, Come Home The Kids Miss You
+    - Popularity and genre of artists
+    - Tempos of songs by genre 
+    - Valence vs popularity by genre    
+    - Valence vs popularity by artist 
 
 You can run this file to create the views and insert them into the database. They also print in the terminal via ```prettytable```. 
 ```sh
@@ -104,13 +104,13 @@ python views.py
 ```visualizations.py```
 - This python file contains the code to create 7 data visualizations using ```matplotlib``` and ```seaborn```. 
 - There are 7 different visualizations 
-    1. Bar plot: top 20 artists by followers 
-    2. Violin plot: tempos based on genre
-    3. Strip plot: tempos based on genre 
-    4. LM plot: valence vs popularity based on artist
-    5. LM plot: valence vs popularity based on genre 
-    6. Heat map: track audio feature correlations
-    7. Pair plot: track audio features relationship
+    - Bar plot: top 20 artists by followers 
+    - Violin plot: tempos based on genre
+    - Strip plot: tempos based on genre 
+    - LM plot: valence vs popularity based on artist
+    - LM plot: valence vs popularity based on genre 
+    - Heat map: track audio feature correlations
+    - Pair plot: track audio features relationship
 
 You can run this file to create the visualizations
 ```sh
