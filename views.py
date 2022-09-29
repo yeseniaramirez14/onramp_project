@@ -739,7 +739,7 @@ def main():
         # 13: the audio features for Jack Harlow's album, Come Home The Kids Miss You
         audio_features_for_album(conn)
 
-        # 14: popularity of artists in the same genre
+        # 14: popularity and genre of artists
         popularity_by_artists_in_genre(conn)
 
         # 15: tempos of songs by genre
@@ -748,7 +748,7 @@ def main():
         # 16: valence vs popularity by genre
         valence_popularity_by_genre(conn)    
 
-        # 17: valence vs popularity by genre  
+        # 17: valence vs popularity by artist  
         valence_popularity_by_artist(conn) 
 
 if __name__ == '__main__':

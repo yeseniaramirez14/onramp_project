@@ -1,8 +1,6 @@
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
-import sqlite3
-from sqlite3 import Error
 from pprint import pprint
 import pandas as pd 
 from tables import create_connection, create_album_table, create_artist_table, create_features_table, create_track_table
@@ -48,7 +46,7 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
     return True
 
 
-#**** INGESTION && TRANSFORMATION ****# 
+#**** ETL ****# 
 def insert_artists(conn):
     create_artist_table(conn)
     for artist in fav_artists:
