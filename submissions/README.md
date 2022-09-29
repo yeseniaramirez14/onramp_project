@@ -3,11 +3,27 @@
 <h2 align="center"> Yesenia Ramirez </h2>
 
 <p align="center">This project includes data from 20 of my favorite artists. I have pulled this data from Spotify and it includes details about the artist, their albums, tracks and track audio features. There are views and visualizations created to see correlations between all the data.</p>
+
+<br>
 <hr>
+<br>
+
+## Table of Contents 
+- [Technologies Used](#technologies-used)
+- [Installation/Setup](#installationsetup)
+- [Directory Tree](#directory-tree)
+- [File Code Explanation](#file-code-explanation)
+- [Author](#author)
+
+<br>
+<hr>
+<br>
 
 ## Technologies Used 
 <img src="https://img.shields.io/badge/GIT-E44C30?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/pypi-3775A9?style=for-the-badge&logo=pypi&logoColor=white"> <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white"> <img src="https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white"> <img src="https://img.shields.io/badge/Jupyter-F37626.svg?&style=for-the-badge&logo=Jupyter&logoColor=white"> <img src="https://img.shields.io/badge/Matplotlib-07405E?style=for-the-badge&logo="> <img src="https://img.shields.io/badge/seaborn-07405E?style=for-the-badge&logo=">
+
 <br>
+<hr>
 <br>
 
 ## Installation/Setup
@@ -39,68 +55,9 @@ SPOTIPY_CLIENT_SECRET=""
 SPOTIPY_REDIRECT_URI=""
 ```
 8. Open your choice of database manager/editor, I used *DB Browser for SQLite*, and open the ```spotify.db``` file to view all the data of my favorite 20 artists
+
 <br>
-<br>
-
-## Data Tables
-#### Artist
-
-|    column    |   datatype   |                              example                             |
-|:------------:|:------------:|:----------------------------------------------------------------:|
-|   artist_id  |  varchar(50) |                      7jy3rLJdDQY21OgRLCZ9sD                      |
-|  artist_name | varchar(255) |                           Foo Fighters                           |
-| external_url | varchar(100) |      https://open.spotify.com/artist/7jy3rLJdDQY21OgRLCZ9sD      |
-|     genre    | varchar(100) |                         alternative metal                        |
-|   image_url  | varchar(100) | https://i.scdn.co/image/ab6761610000e5eb9a43b87b50cd3d03544bb3e5 |
-|   followers  |      int     |                             10156976                             |
-|  popularity  |      int     |                                77                                |
-|     type     |  varchar(50) |                              artist                              |
-|  artist_uri  | varchar(100) |               spotify:artist:7jy3rLJdDQY21OgRLCZ9sD              |
-<br>
-
-#### Album
-
-|    column    |   datatype   |                              example                             |
-|:------------:|:------------:|:----------------------------------------------------------------:|
-|   album_id   |  varchar(50) |                      2FfewmvnA0wctMD64KjOxP                      |
-|  album_name  | varchar(255) |                            Dream Widow                           |
-| external_url | varchar(100) |       https://open.spotify.com/album/2FfewmvnA0wctMD64KjOxP      |
-|   image_url  | varchar(100) | https://i.scdn.co/image/ab67616d0000b273a57abaeb967f055948170bd6 |
-| release_date |     date     |                            2022-03-25                            |
-| total_tracks |      int     |                                 8                                |
-|     type     |  varchar(50) |                               album                              |
-|   album_uri  | varchar(100) |               spotify:album:2FfewmvnA0wctMD64KjOxP               |
-|   artist_id  |  varchar(50) |                      7jy3rLJdDQY21OgRLCZ9sD                      |
-<br>
-
-#### Track
-|    column    |   datatype   |                        example                        |
-|:------------:|:------------:|:-----------------------------------------------------:|
-|   track_id   |  varchar(50) |                 5k8kaD41vSP6l0Jhe9HzmY                |
-| song_name    | varchar(255) |                         Encino                        |
-| external_url | varchar(100) | https://open.spotify.com/track/5k8kaD41vSP6l0Jhe9HzmY |
-|  duration_ms |      int     |                         98293                         |
-|   explicit   |    boolean   |                          TRUE                         |
-|  disc_number |      int     |                           1                           |
-|     type     |  varchar(50) |                         track                         |
-|   song_uri   | varchar(100) |          spotify:track:5k8kaD41vSP6l0Jhe9HzmY         |
-|   album_id   |  varchar(50) |                 2FfewmvnA0wctMD64KjOxP                |
-<br>
-
-#### Track_Feature
-|      column      |   datatype   |                example               |
-|:----------------:|:------------:|:------------------------------------:|
-|     track_id     |  varchar(50) |        5k8kaD41vSP6l0Jhe9HzmY        |
-|   danceability   |    double    |                 0.277                |
-|      energy      |    double    |                 0.992                |
-| instrumentalness |    double    |                 0.836                |
-|     liveness     |    double    |                 0.272                |
-|     loudness     |    double    |                -6.237                |
-|    speechiness   |    double    |                0.0856                |
-|       tempo      |    double    |                103.494               |
-|       type       |  varchar(50) |            audio_features            |
-|      valence     |    double    |                 0.148                |
-|     song_uri     | varchar(100) | spotify:track:5k8kaD41vSP6l0Jhe9HzmY |
+<hr>
 <br>
 
 ## Directory Tree
@@ -126,14 +83,16 @@ SPOTIPY_REDIRECT_URI=""
     * [requirements.txt](./requirements.txt)
     * [spotify.db](./spotify.db)
     * [visualizations.pdf](./visualizations.pdf)
+
 <br>
+<hr>
 <br>
 
 ## File Code Explanation
 
-[<h3>```submissions/```</h3>](.) 
+[<h2>```submissions/```</h2>](.) 
 
-[```d1_tables.py```](./data_code/d1_tables.py)
+[<h3>```d1_tables.py```</h3>](./data_code/d1_tables.py)
 - This python file is where I created all my tables necessary for my database
     - artist
     - album
@@ -147,7 +106,7 @@ python data_code/d1_tables.py
 ```
 <br>
 
-[```d2_db.py```](./data_code/d2_db.py)
+[<h3>```d2_db.py```</h3>](./data_code/d2_db.py)
 - This python file contains my ETL code using ```Spotipy```, ```Pandas```, ```SQL```, and ```Python```. 
 - ```check_if_valid_data``` checks the data frame for any null values and if the data frame is empty
 - There are 4 functions that are specific to one table in the database
@@ -165,7 +124,10 @@ python data_code/d2_db.py
 ```
 <br>
 
-[```d3_views.py```](./data_code/d3_views.py)
+[<h3>```d3_views.py```</h3>](./data_code/d3_views.py)
+
+*Jupyter version available at [```jupyter_notebooks/views.ipynb```](./jupyter_notebooks/views.ipynb)*
+
 - This python file is where I created all my SQLite views so the data can be analyzed. 
 - There are a variety of 17 different views 
     - Top 10 songs per artist in terms of duration_ms
@@ -190,11 +152,13 @@ You can run this file to create the views and insert them into the database. The
 ```sh
 python data_code/d3_views.py
 ```
-*Jupyter version available at [```jupyter_notebooks/views.ipynb```](./jupyter_notebooks/views.ipynb)*
 
 <br>
 
-[```d4_visualizations.py```](./data_code/d4_visualizations.py)
+[<h3>```d4_visualizations.py```</h3>](./data_code/d4_visualizations.py)
+
+*Jupyter version available at [```jupyter_notebooks/visualizations.ipynb```](./jupyter_notebooks/visualizations.ipynb)*
+
 - This python file contains the code to create 7 data visualizations using ```matplotlib``` and ```seaborn```. 
 - There are 7 different visualizations 
     - Bar plot: top 20 artists by followers 
@@ -205,15 +169,15 @@ python data_code/d3_views.py
     - Heat map: track audio feature correlations
     - Pair plot: track audio features relationship
 
-*[visualizations.pdf](./visualizations.pdf) goes into more detail about the graphs*
+### *[visualizations.pdf](./visualizations.pdf) goes into more detail about the graphs*
 
 You can run this file to create the visualizations
 ```sh
 python data_code/visualizations.py
 ```
-*Jupyter version available at [```jupyter_notebooks/visualizations.ipynb```](./jupyter_notebooks/visualizations.ipynb)*
 
 <br>
+<hr>
 <br>
 
 ## Author
