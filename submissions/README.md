@@ -13,6 +13,7 @@
 - [Installation/Setup](#installationsetup)
 - [Directory Tree](#directory-tree)
 - [File Code Explanation](#file-code-explanation)
+- [Reflection](#reflection)
 - [Author](#author)
 
 <br>
@@ -54,7 +55,8 @@ SPOTIPY_CLIENT_ID=""
 SPOTIPY_CLIENT_SECRET=""
 SPOTIPY_REDIRECT_URI=""
 ```
-8. Open your choice of database manager/editor, I used *DB Browser for SQLite*, and open the ```spotify.db``` file to view all the data of my favorite 20 artists
+8. Open your choice of database manager/editor, I used *DB Browser for SQLite*, and open the ```spotify.db``` file to view all the data of my favorite 20 artists. You can also delete ```spotify.db``` and start all over by looking at [my code explanations](#file-code-explanation). 
+
 
 <br>
 <hr>
