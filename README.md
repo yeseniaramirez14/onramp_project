@@ -13,7 +13,6 @@
 - [Installation/Setup](#installationsetup)
 - [Directory Tree](#directory-tree)
 - [File Code Explanation](#file-code-explanation)
-- [Reflection](#reflection)
 - [Author](#author)
 
 <br>
@@ -178,12 +177,6 @@ You can run this file to create the visualizations
 python data_code/visualizations.py
 ```
 
-<br>
-<hr>
-<br>
-
-## Reflection 
-I really enjoyed working on this project and I have a lot of fun using ```python``` and ```sql```. I was introduced to some tools that I have never used, which I appreciate as I love the process of being challenged to learn something new. Reflecting back and after further research, I would divide my ETL process up instead of doing everything in one step. I would utilize ```pandas``` more to validate my data more effectively. I found later that ```pandas``` has a method to remove duplicates, which I am curious to try since I removed duplicates by using ```python```. I also would utilize ```jupyter``` as I code. It's so neat how I can make changes to my code and easily see the result, so I will begin using this for future projects. I am curious on how much my data analytics will change when I pull more artists, so this project is something I will continue to work on to advance my skills and work more with ```matplotlib``` and ```seaborn```. I appreciate this opportunity to show you my skills and the potential and drive I have to offer Vanguard. 
 
 <br>
 <hr>

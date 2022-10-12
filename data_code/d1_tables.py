@@ -105,7 +105,7 @@ def create_features_table(conn):
 
 
 def main():
-    database = "spotify.db"
+    database = "../spotify.db"
 
     # Create a database connection
     conn = create_connection(database)
